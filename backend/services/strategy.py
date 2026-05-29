@@ -45,12 +45,6 @@ TRADING_DAYS_PER_MONTH = 21
 MOMENTUM_LOOKBACK_DAYS = 12 * TRADING_DAYS_PER_MONTH   # ~252
 MOMENTUM_SKIP_DAYS = TRADING_DAYS_PER_MONTH            # ~21
 
-FALLBACK: dict[str, Any] = {
-    "tickers": ["AAPL", "MSFT", "NVDA", "JPM", "BRK-B"],
-    "weights": [0.2, 0.2, 0.2, 0.2, 0.2],
-    "strategy": "fallback-equal-weight",
-}
-
 
 # ---------------------------------------------------------------------------
 # Signal computation
@@ -198,8 +192,6 @@ def run_value_momentum_strategy() -> dict[str, Any]:
             [round(w, 4) for w in result["weights"]],
         )
         return result
-    except Exception as exc:  # noqa: BLE001 — broad on purpose: any failure → fallback
-        logger.warning("value-momentum strategy failed (%s); using fallback", exc)
-        fallback = dict(FALLBACK)
-        fallback["rebalanced_at"] = datetime.now(timezone.utc).isoformat()
-        return fallback
+    except Exception as exc:
+        logger.error("value-momentum strategy failed: %s", exc)
+        raise

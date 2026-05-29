@@ -19,7 +19,6 @@ const PERIODS = [
 
 const STRATEGY_LABELS = {
   "value-momentum": "Value-Momentum",
-  "fallback-equal-weight": "Equal-Weight Fallback",
 };
 
 const MAIN_TABS = [
