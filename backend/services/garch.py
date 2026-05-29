@@ -116,7 +116,7 @@ def portfolio_garch_vol_forecast(
     corr = returns_df.corr().values
 
     # Portfolio daily vol time series via diag(σ_t) C diag(σ_t).
-    aligned = cond_vols[tickers].fillna(method="ffill").fillna(method="bfill").fillna(0.0)
+    aligned = cond_vols[tickers].ffill().bfill().fillna(0.0)
     port_daily_vol = np.empty(len(aligned))
     sigma_vals = aligned.values
     for t in range(len(aligned)):

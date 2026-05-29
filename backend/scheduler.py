@@ -11,6 +11,7 @@ the process restarts mid-month.
 """
 from __future__ import annotations
 
+import asyncio
 import logging
 from datetime import date
 
@@ -18,6 +19,7 @@ import holidays
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 
+from services import precompute
 from services.strategy import run_value_momentum_strategy
 
 logger = logging.getLogger(__name__)
@@ -49,12 +51,14 @@ def _rebalance(app) -> None:
 
     portfolio = run_value_momentum_strategy()
     app.state.portfolio = portfolio
+    app.state.cache = {}
     logger.info(
         "Rebalanced: %s → %s | weights: %s",
         today_date.isoformat(),
         portfolio["tickers"],
         [round(w, 4) for w in portfolio["weights"]],
     )
+    asyncio.run(precompute.precompute_all(app))
 
 
 def start_scheduler(app) -> BackgroundScheduler:

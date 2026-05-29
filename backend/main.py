@@ -15,6 +15,7 @@ from routers import (
     risk,
 )
 from scheduler import start_scheduler
+from services import precompute
 from services.strategy import run_value_momentum_strategy
 
 logging.basicConfig(
@@ -31,11 +32,14 @@ async def lifespan(app: FastAPI):
     logger.info("running value-momentum strategy at startup…")
     portfolio = await asyncio.to_thread(run_value_momentum_strategy)
     app.state.portfolio = portfolio
+    app.state.cache = {}
     logger.info(
         "initial portfolio: %s | weights: %s",
         portfolio["tickers"],
         [round(w, 4) for w in portfolio["weights"]],
     )
+    # Hold a strong reference so the task isn't GC'd mid-flight.
+    app.state.precompute_task = asyncio.create_task(precompute.precompute_all(app))
     scheduler = start_scheduler(app)
     app.state.scheduler = scheduler
     try:

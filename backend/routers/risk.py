@@ -22,9 +22,16 @@ router = APIRouter(prefix="/api/risk", tags=["risk"])
 LOOKBACK = "2y"
 
 
+def _cache(request: Request) -> dict:
+    return getattr(request.app.state, "cache", {})
+
+
 @router.get("/monte-carlo", response_model=MonteCarloResponse)
 async def monte_carlo_endpoint(request: Request) -> MonteCarloResponse:
     """Run 10k-path Monte Carlo VaR over a 1-year horizon."""
+    if cached := _cache(request).get("monte_carlo"):
+        return MonteCarloResponse(**cached)
+
     active = active_portfolio(request)
     tickers = list(active["tickers"])
     weights = list(active["weights"])
@@ -34,33 +41,29 @@ async def monte_carlo_endpoint(request: Request) -> MonteCarloResponse:
         raise HTTPException(502, str(exc)) from exc
     returns = prices.pct_change().dropna(how="all")
     cols = list(returns.columns)
-    weight_map = dict(zip(tickers, weights))
-    w_aligned = np.array([weight_map.get(c, 0.0) for c in cols], dtype=float)
-    s = w_aligned.sum()
-    if s > 0:
-        w_aligned = w_aligned / s
-    result = await asyncio.to_thread(
-        monte_carlo.simulate_portfolio_paths, returns, w_aligned
-    )
+    wmap = dict(zip(tickers, weights))
+    w = np.array([wmap.get(c, 0.0) for c in cols], dtype=float)
+    if w.sum() > 0:
+        w = w / w.sum()
+    result = await asyncio.to_thread(monte_carlo.simulate_portfolio_paths, returns, w)
     return MonteCarloResponse(**result)
 
 
 @router.get("/stress-tests", response_model=StressTestResponse)
 async def stress_tests_endpoint(request: Request) -> StressTestResponse:
     """Replay each preset historical scenario."""
+    if cached := _cache(request).get("stress_tests"):
+        return StressTestResponse(scenarios=[StressScenario(**r) for r in cached])
+
     active = active_portfolio(request)
     rows = await asyncio.to_thread(
         stress_test.run_all_scenarios, list(active["tickers"]), list(active["weights"])
     )
-    return StressTestResponse(
-        scenarios=[StressScenario(**r) for r in rows]
-    )
+    return StressTestResponse(scenarios=[StressScenario(**r) for r in rows])
 
 
 @router.post("/stress-custom", response_model=StressScenario)
-async def stress_custom(
-    request: Request, payload: CustomStressRequest
-) -> StressScenario:
+async def stress_custom(request: Request, payload: CustomStressRequest) -> StressScenario:
     """Run a user-specified date window as a stress scenario."""
     active = active_portfolio(request)
     row = await asyncio.to_thread(
@@ -77,6 +80,18 @@ async def stress_custom(
 @router.get("/garch", response_model=GarchResponse)
 async def garch_endpoint(request: Request) -> GarchResponse:
     """Fit GARCH(1,1) per asset and return historical + 30-day-ahead vol."""
+    if cached := _cache(request).get("garch"):
+        return GarchResponse(
+            historical_vol=cached["historical_vol"],
+            forecast_vol=cached["forecast_vol"],
+            forecast_band_low=cached["forecast_band_low"],
+            forecast_band_high=cached["forecast_band_high"],
+            history=cached["history"],
+            forward=cached["forward"],
+            assets=[GarchAssetParams(**a) for a in cached["assets"]],
+            persistent_assets=cached["persistent_assets"],
+        )
+
     active = active_portfolio(request)
     tickers = list(active["tickers"])
     weights = list(active["weights"])
@@ -86,14 +101,11 @@ async def garch_endpoint(request: Request) -> GarchResponse:
         raise HTTPException(502, str(exc)) from exc
     returns = prices.pct_change().dropna(how="all")
     cols = list(returns.columns)
-    weight_map = dict(zip(tickers, weights))
-    w_aligned = np.array([weight_map.get(c, 0.0) for c in cols], dtype=float)
-    s = w_aligned.sum()
-    if s > 0:
-        w_aligned = w_aligned / s
-    result = await asyncio.to_thread(
-        garch.portfolio_garch_vol_forecast, returns, w_aligned
-    )
+    wmap = dict(zip(tickers, weights))
+    w = np.array([wmap.get(c, 0.0) for c in cols], dtype=float)
+    if w.sum() > 0:
+        w = w / w.sum()
+    result = await asyncio.to_thread(garch.portfolio_garch_vol_forecast, returns, w)
     return GarchResponse(
         historical_vol=result["historical_vol"],
         forecast_vol=result["forecast_vol"],
