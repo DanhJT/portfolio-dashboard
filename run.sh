@@ -28,10 +28,12 @@ echo "[backend] uvicorn on http://localhost:8000"
 ) &
 BACKEND_PID=$!
 
-echo "[frontend] vite on http://localhost:5173"
+echo "[frontend] vite on http://localhost:5173 (live mode → local backend)"
 (
   cd "$FRONTEND_DIR"
-  npm run dev
+  # run.sh is the live-dev path, so talk to the local backend rather than the
+  # static snapshot (which is the production default).
+  VITE_DATA_SOURCE=live npm run dev
 ) &
 FRONTEND_PID=$!
 
