@@ -41,6 +41,10 @@ UNIVERSE: list[str] = [
 TOP_N = 5
 WEIGHT_CAP = 0.35
 WINSOR_LIMIT = 3.0
+
+# Equal-weight fallback basket: five large-cap names across distinct sectors,
+# used when live signals can't be computed (e.g. data provider rate-limits us).
+FALLBACK_TICKERS: list[str] = ["AAPL", "MSFT", "JPM", "JNJ", "XOM"]
 TRADING_DAYS_PER_MONTH = 21
 MOMENTUM_LOOKBACK_DAYS = 12 * TRADING_DAYS_PER_MONTH   # ~252
 MOMENTUM_SKIP_DAYS = TRADING_DAYS_PER_MONTH            # ~21
@@ -115,7 +119,10 @@ def _value_signal(tickers: list[str]) -> pd.Series:
             if pb is not None:
                 pb_map[ticker] = pb
     if not pb_map:
-        raise RuntimeError("no price-to-book data available for any ticker")
+        # Degrade gracefully: an empty value signal lets the caller fall back
+        # to momentum-only rather than aborting the whole strategy.
+        logger.warning("no price-to-book data available; value signal unavailable")
+        return pd.Series(dtype=float)
     btm = pd.Series({t: 1.0 / pb for t, pb in pb_map.items()})
     return _zscore_winsorise(btm)
 
@@ -168,30 +175,59 @@ def _construct_weights(composite: pd.Series) -> pd.Series:
 # Public entrypoint
 # ---------------------------------------------------------------------------
 
+def _equal_weight_fallback() -> dict[str, Any]:
+    """Equal-weight basket of large-cap defaults. The last line of defence."""
+    n = len(FALLBACK_TICKERS)
+    logger.warning("using equal-weight fallback basket: %s", FALLBACK_TICKERS)
+    return {
+        "tickers": list(FALLBACK_TICKERS),
+        "weights": [1.0 / n] * n,
+        "strategy": "equal-weight-fallback",
+        "rebalanced_at": datetime.now(timezone.utc).isoformat(),
+    }
+
+
 def run_value_momentum_strategy() -> dict[str, Any]:
-    """Compute the live value-momentum portfolio. Falls back on any failure."""
+    """Compute the live value-momentum portfolio.
+
+    Degrades in two steps so a data outage never crashes the caller:
+    1. If the value signal is unavailable, fall back to momentum-only.
+    2. If momentum (or anything else) fails, fall back to an equal-weight
+       basket of large-cap defaults.
+    """
     try:
         mom = _momentum_signal(UNIVERSE)
+        if mom.empty or len(mom) < TOP_N:
+            raise RuntimeError(f"momentum signal yielded only {len(mom)} names")
+
         val = _value_signal(UNIVERSE)
         common = mom.index.intersection(val.index)
-        if len(common) < TOP_N:
-            raise RuntimeError(
-                f"only {len(common)} tickers have both signals; need at least {TOP_N}"
+        if not val.empty and len(common) >= TOP_N:
+            composite = 0.5 * mom.loc[common] + 0.5 * val.loc[common]
+            strategy = "value-momentum"
+        else:
+            # Value data missing or too sparse to combine — use momentum alone.
+            logger.warning(
+                "value signal sparse (%d overlapping names); using momentum-only",
+                len(common),
             )
-        composite = 0.5 * mom.loc[common] + 0.5 * val.loc[common]
+            composite = mom
+            strategy = "momentum"
+
         weights = _construct_weights(composite)
         result = {
             "tickers": list(weights.index),
             "weights": [float(w) for w in weights.values],
-            "strategy": "value-momentum",
+            "strategy": strategy,
             "rebalanced_at": datetime.now(timezone.utc).isoformat(),
         }
         logger.info(
-            "value-momentum strategy selected %s with weights %s",
+            "%s strategy selected %s with weights %s",
+            strategy,
             result["tickers"],
             [round(w, 4) for w in result["weights"]],
         )
         return result
     except Exception as exc:
-        logger.error("value-momentum strategy failed: %s", exc)
-        raise
+        logger.error("strategy failed: %s — falling back to equal-weight defaults", exc)
+        return _equal_weight_fallback()

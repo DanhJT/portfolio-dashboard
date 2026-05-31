@@ -16,6 +16,7 @@ import {
   getMonteCarlo,
   getStressTests,
   postCustomStress,
+  IS_STATIC,
 } from "../../api.js";
 import CommentaryButton from "../CommentaryButton.jsx";
 
@@ -97,7 +98,7 @@ function MonteCarloSection({ data }) {
 
 // ---------- Stress tests ----------
 
-function StressSection({ scenarios, onRunCustom, customResult }) {
+function StressSection({ scenarios, onRunCustom, customResult, allowCustom = true }) {
   const [start, setStart] = useState("2018-12-01");
   const [end, setEnd] = useState("2019-01-31");
   const [name, setName] = useState("custom");
@@ -161,49 +162,51 @@ function StressSection({ scenarios, onRunCustom, customResult }) {
           ))}
         </tbody>
       </table>
-      <div className="rounded-md border border-neutral-800 bg-black p-3 flex flex-wrap items-end gap-3">
-        <div>
-          <label className="block text-[10px] uppercase tracking-wider text-neutral-500 mb-1">
-            Name
-          </label>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="bg-black border border-neutral-800 text-neutral-200 rounded px-2 py-1 text-sm w-40"
-          />
+      {allowCustom && (
+        <div className="rounded-md border border-neutral-800 bg-black p-3 flex flex-wrap items-end gap-3">
+          <div>
+            <label className="block text-[10px] uppercase tracking-wider text-neutral-500 mb-1">
+              Name
+            </label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="bg-black border border-neutral-800 text-neutral-200 rounded px-2 py-1 text-sm w-40"
+            />
+          </div>
+          <div>
+            <label className="block text-[10px] uppercase tracking-wider text-neutral-500 mb-1">
+              Start
+            </label>
+            <input
+              type="date"
+              value={start}
+              onChange={(e) => setStart(e.target.value)}
+              className="bg-black border border-neutral-800 text-neutral-200 rounded px-2 py-1 text-sm"
+            />
+          </div>
+          <div>
+            <label className="block text-[10px] uppercase tracking-wider text-neutral-500 mb-1">
+              End
+            </label>
+            <input
+              type="date"
+              value={end}
+              onChange={(e) => setEnd(e.target.value)}
+              className="bg-black border border-neutral-800 text-neutral-200 rounded px-2 py-1 text-sm"
+            />
+          </div>
+          <button
+            type="button"
+            onClick={runCustom}
+            disabled={running}
+            className="ml-auto rounded-md bg-white px-3 py-1.5 text-sm font-medium text-black hover:bg-neutral-200 disabled:opacity-60"
+          >
+            {running ? "Running…" : "Run custom"}
+          </button>
         </div>
-        <div>
-          <label className="block text-[10px] uppercase tracking-wider text-neutral-500 mb-1">
-            Start
-          </label>
-          <input
-            type="date"
-            value={start}
-            onChange={(e) => setStart(e.target.value)}
-            className="bg-black border border-neutral-800 text-neutral-200 rounded px-2 py-1 text-sm"
-          />
-        </div>
-        <div>
-          <label className="block text-[10px] uppercase tracking-wider text-neutral-500 mb-1">
-            End
-          </label>
-          <input
-            type="date"
-            value={end}
-            onChange={(e) => setEnd(e.target.value)}
-            className="bg-black border border-neutral-800 text-neutral-200 rounded px-2 py-1 text-sm"
-          />
-        </div>
-        <button
-          type="button"
-          onClick={runCustom}
-          disabled={running}
-          className="ml-auto rounded-md bg-white px-3 py-1.5 text-sm font-medium text-black hover:bg-neutral-200 disabled:opacity-60"
-        >
-          {running ? "Running…" : "Run custom"}
-        </button>
-      </div>
+      )}
     </div>
   );
 }
@@ -397,6 +400,7 @@ export default function RiskTab() {
         scenarios={stress ?? []}
         customResult={customStress}
         onRunCustom={runCustom}
+        allowCustom={!IS_STATIC}
       />
       <GarchSection data={garchData} />
       <CommentaryButton

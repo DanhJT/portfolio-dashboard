@@ -8,6 +8,8 @@ import {
   getMetrics,
   getNews,
   getPrices,
+  getSnapshotMeta,
+  IS_STATIC,
 } from "./api.js";
 
 const PERIODS = [
@@ -126,15 +128,16 @@ export default function App() {
         weights: current.weights,
         period,
       };
-      const [m, p, n] = await Promise.all([
+      const [m, p, n, meta] = await Promise.all([
         getMetrics(fetchPortfolio),
         getPrices(fetchPortfolio),
         getNews(fetchPortfolio),
+        getSnapshotMeta(),
       ]);
       setMetrics(m);
       setPrices(p);
       setNews(n);
-      setUpdatedAt(new Date());
+      setUpdatedAt(meta?.generated_at ? new Date(meta.generated_at) : new Date());
     } catch (e) {
       setError(e.message);
     } finally {
@@ -156,7 +159,7 @@ export default function App() {
             </h1>
             <div className="mt-1 flex items-center gap-3">
               <p className="text-xs text-neutral-400">
-                Live data from Yahoo Finance
+                {IS_STATIC ? "Daily snapshot · data from Yahoo Finance" : "Live data from Yahoo Finance"}
               </p>
               <StrategyBadge portfolio={activePortfolio} />
             </div>
@@ -180,7 +183,9 @@ export default function App() {
             </button>
             <div className="text-xs text-neutral-400 font-mono">
               {updatedAt
-                ? `Updated ${updatedAt.toLocaleTimeString()}`
+                ? IS_STATIC
+                  ? `Data as of ${updatedAt.toLocaleDateString()}`
+                  : `Updated ${updatedAt.toLocaleTimeString()}`
                 : "Loading…"}
             </div>
           </div>

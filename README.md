@@ -119,8 +119,60 @@ classifies each metric into a band and stitches together four sentences:
 Swapping in a real LLM is a one-function change: replace
 `generate_commentary` with an API call and keep the same return signature.
 
+## Deployment (static snapshot)
+
+The production site is **fully static** — no live backend. yfinance is
+rate-limited/blocked from datacenter IPs, so instead of fetching live on every
+request, a generator produces a daily `frontend/public/snapshot.json` that the
+frontend reads directly from the CDN. The result: instant load, zero cold
+start, $0 hosting, and it can never crash from a bad data day.
+
+### How it works
+
+```
+generate_snapshot.py  ──►  frontend/public/snapshot.json  ──►  Vercel (static)
+   (runs strategy +              (committed to git;              served from CDN
+    all analytics,                triggers Vercel deploy)         by api.js)
+    reuses live services)
+```
+
+- **Data source toggle** — `frontend/src/api.js` reads `VITE_DATA_SOURCE`:
+  - `static` (default, used in production) — reads `snapshot.json`.
+  - `live` — hits the FastAPI backend; set `VITE_DATA_SOURCE=live` for local
+    development against `uvicorn`.
+- The backend is retained for **local development** and as the
+  **snapshot-generation engine** — it is no longer needed in production.
+- In static mode the custom stress-window input is hidden (it needs live
+  compute); the four preset historical scenarios remain. Liquidity AUM is
+  recomputed client-side.
+
+### Refreshing the snapshot
+
+**Automatic (daily):** `.github/workflows/snapshot.yml` runs every day at
+07:00 UTC (and on-demand via the Actions tab), regenerates the snapshot, and
+commits it only if it changed — which triggers a Vercel redeploy. On any data
+failure it leaves the existing snapshot untouched.
+
+**Manual / fallback:** if GitHub's runners get rate-limited by Yahoo, refresh
+from your own machine (residential IPs are rarely blocked):
+
+```bash
+./backend/refresh_snapshot.sh
+```
+
+This regenerates the snapshot and pushes it.
+
+### Regenerate locally without pushing
+
+```bash
+cd backend && python generate_snapshot.py   # writes ../frontend/public/snapshot.json
+```
+
 ## Notes
 
 - Educational use only — not investment advice.
 - `yfinance` data is delayed and best-effort. Tickers with no data are
   dropped with a log warning rather than failing the request.
+- The strategy degrades gracefully: if the value signal is unavailable it
+  falls back to momentum-only, and if all signals fail it falls back to an
+  equal-weight basket — so snapshot generation never crashes.
