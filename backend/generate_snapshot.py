@@ -62,6 +62,7 @@ from services import (
     risk,
     stress_test,
 )
+from scheduler import _is_first_trading_day_of_month
 from services.strategy import run_value_momentum_strategy
 
 logging.basicConfig(
@@ -279,16 +280,49 @@ def _commentary_section(metrics_1y: dict, mc: dict | None, stress: dict | None,
 # Orchestration
 # ---------------------------------------------------------------------------
 
+def _load_existing_rebalanced_at() -> str | None:
+    """Read rebalanced_at from the existing snapshot, if any."""
+    try:
+        if SNAPSHOT_PATH.exists():
+            existing = json.loads(SNAPSHOT_PATH.read_text())
+            return existing.get("portfolio", {}).get("rebalanced_at")
+    except Exception:  # noqa: BLE001
+        pass
+    return None
+
+
 def build_snapshot() -> dict[str, Any]:
     t0 = time.perf_counter()
-    from datetime import datetime, timezone
+    from datetime import date, datetime, timezone
+
+    today = date.today()
+    is_rebalance_day = _is_first_trading_day_of_month(today)
+
+    # Determine the correct rebalanced_at:
+    # - On a genuine rebalance day (first trading day of the month): stamp today.
+    # - Any other day: preserve the date from the existing snapshot so the UI
+    #   shows when the portfolio was actually last rebalanced, not when the
+    #   snapshot was regenerated.
+    if is_rebalance_day:
+        rebalanced_at = datetime.combine(today, datetime.min.time()).replace(
+            tzinfo=timezone.utc
+        ).isoformat()
+        logger.info("today is a rebalance day (%s) — running fresh strategy", today)
+    else:
+        rebalanced_at = _load_existing_rebalanced_at()
+        logger.info(
+            "not a rebalance day (%s) — preserving existing rebalanced_at: %s",
+            today,
+            rebalanced_at,
+        )
 
     logger.info("running strategy…")
-    portfolio = run_value_momentum_strategy()
+    portfolio = run_value_momentum_strategy(rebalanced_at=rebalanced_at)
     tickers = list(portfolio["tickers"])
     weights = list(portfolio["weights"])
     weight_map = dict(zip(tickers, weights))
-    logger.info("portfolio: %s (%s)", tickers, portfolio["strategy"])
+    logger.info("portfolio: %s (%s) rebalanced_at: %s", tickers, portfolio["strategy"],
+                portfolio["rebalanced_at"])
 
     # Per-period metrics / prices / correlation.
     periods: dict[str, Any] = {}

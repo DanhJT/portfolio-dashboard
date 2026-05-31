@@ -176,25 +176,33 @@ def _construct_weights(composite: pd.Series) -> pd.Series:
 # ---------------------------------------------------------------------------
 
 def _equal_weight_fallback() -> dict[str, Any]:
-    """Equal-weight basket of large-cap defaults. The last line of defence."""
+    """Equal-weight basket of large-cap defaults. Caller sets rebalanced_at."""
     n = len(FALLBACK_TICKERS)
     logger.warning("using equal-weight fallback basket: %s", FALLBACK_TICKERS)
     return {
         "tickers": list(FALLBACK_TICKERS),
         "weights": [1.0 / n] * n,
         "strategy": "equal-weight-fallback",
-        "rebalanced_at": datetime.now(timezone.utc).isoformat(),
+        "rebalanced_at": None,  # caller fills this in
     }
 
 
-def run_value_momentum_strategy() -> dict[str, Any]:
+def run_value_momentum_strategy(rebalanced_at: str | None = None) -> dict[str, Any]:
     """Compute the live value-momentum portfolio.
+
+    Args:
+        rebalanced_at: ISO timestamp to use for the rebalanced_at field.
+            Pass this when you want to preserve a known rebalance date (e.g.
+            the snapshot generator passes the existing date on non-rebalance
+            days). If None, stamps the current UTC time — only appropriate
+            when this is called as a genuine rebalance event.
 
     Degrades in two steps so a data outage never crashes the caller:
     1. If the value signal is unavailable, fall back to momentum-only.
     2. If momentum (or anything else) fails, fall back to an equal-weight
        basket of large-cap defaults.
     """
+    _rebalanced_at = rebalanced_at or datetime.now(timezone.utc).isoformat()
     try:
         mom = _momentum_signal(UNIVERSE)
         if mom.empty or len(mom) < TOP_N:
@@ -219,7 +227,7 @@ def run_value_momentum_strategy() -> dict[str, Any]:
             "tickers": list(weights.index),
             "weights": [float(w) for w in weights.values],
             "strategy": strategy,
-            "rebalanced_at": datetime.now(timezone.utc).isoformat(),
+            "rebalanced_at": _rebalanced_at,
         }
         logger.info(
             "%s strategy selected %s with weights %s",
@@ -230,4 +238,6 @@ def run_value_momentum_strategy() -> dict[str, Any]:
         return result
     except Exception as exc:
         logger.error("strategy failed: %s — falling back to equal-weight defaults", exc)
-        return _equal_weight_fallback()
+        fb = _equal_weight_fallback()
+        fb["rebalanced_at"] = _rebalanced_at
+        return fb
