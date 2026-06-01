@@ -116,14 +116,6 @@ export async function getPrices(portfolio) {
   return fetchJSON(`/api/portfolio/prices?${buildQuery(portfolio)}`);
 }
 
-export async function getCorrelation(portfolio) {
-  if (IS_STATIC) {
-    const s = await loadSnapshot();
-    return s.periods[periodKey(portfolio.period)].correlation;
-  }
-  return fetchJSON(`/api/portfolio/correlation?${buildQuery(portfolio)}`);
-}
-
 export async function getNews(portfolio) {
   if (IS_STATIC) return (await loadSnapshot()).news;
   return fetchJSON(`/api/portfolio/news?${buildQuery(portfolio)}`);

@@ -107,96 +107,6 @@ def _overview(m: dict[str, Any]) -> str:
 
 
 # ---------------------------------------------------------------------------
-# Module: optimization
-# ---------------------------------------------------------------------------
-
-def _optimization(m: dict[str, Any]) -> str:
-    cur = m.get("current") or {}
-    ms = m.get("max_sharpe") or {}
-    mv = m.get("min_vol") or {}
-
-    cur_w = dict(zip(cur.get("tickers", []), cur.get("weights", [])))
-    ms_w = dict(zip(ms.get("tickers", []), ms.get("weights", [])))
-
-    deltas = [
-        (t, ms_w.get(t, 0.0) - cur_w.get(t, 0.0))
-        for t in set(cur_w) | set(ms_w)
-    ]
-    deltas.sort(key=lambda x: abs(x[1]), reverse=True)
-    biggest = deltas[:2]
-
-    parts: list[str] = []
-    if cur and ms:
-        d_sharpe = ms.get("sharpe", 0.0) - cur.get("sharpe", 0.0)
-        parts.append(
-            f"Mean-variance optimisation lifts Sharpe from {_num(cur.get('sharpe'))} "
-            f"to {_num(ms.get('sharpe'))} (Δ {_num(d_sharpe, 2)}), "
-            f"with return {_pct(ms.get('return'))} at "
-            f"{_pct(ms.get('volatility'))} volatility."
-        )
-    if biggest:
-        rebal = ", ".join(
-            f"{'+' if d > 0 else ''}{_pct(d, 1)} {t}" for t, d in biggest
-        )
-        parts.append(
-            f"Largest reallocations from the current book to the Max-Sharpe "
-            f"point: {rebal}."
-        )
-    if mv:
-        parts.append(
-            f"Minimum-variance alternative sits at {_pct(mv.get('volatility'))} vol "
-            f"and {_pct(mv.get('return'))} return — useful if drawdown control "
-            f"matters more than return capture."
-        )
-    parts.append(
-        "Trade-off: optimised allocations capture historical regimes well but "
-        "are notoriously sensitive to estimation error in mean returns — size "
-        "any rotation conservatively."
-    )
-    return " ".join(parts)
-
-
-# ---------------------------------------------------------------------------
-# Module: Black-Litterman
-# ---------------------------------------------------------------------------
-
-def _black_litterman(m: dict[str, Any]) -> str:
-    prior = m.get("prior_weights") or {}
-    post = m.get("posterior_weights") or {}
-    views = m.get("views") or []
-
-    deltas = [(t, post.get(t, 0.0) - prior.get(t, 0.0)) for t in set(prior) | set(post)]
-    deltas.sort(key=lambda x: abs(x[1]), reverse=True)
-    biggest = deltas[:2]
-
-    parts: list[str] = []
-    if views:
-        parts.append(
-            f"You expressed {len(views)} view"
-            f"{'s' if len(views) != 1 else ''}; the posterior tilts the "
-            f"market-equilibrium prior accordingly while keeping every "
-            f"selected name in the book."
-        )
-    if biggest:
-        tilts = ", ".join(
-            f"{'+' if d > 0 else ''}{_pct(d, 1)} {t}" for t, d in biggest
-        )
-        parts.append(f"Largest tilts vs prior: {tilts}.")
-    parts.append(
-        "Read the size of those tilts as the strength of your conviction "
-        "blended with the market's: higher confidence on a view pushes the "
-        "posterior further from equilibrium, but never past what your "
-        "covariance estimate allows."
-    )
-    if not views:
-        parts.append(
-            "No views supplied → posterior matches the prior (market portfolio). "
-            "Add a view in the table to tilt the book."
-        )
-    return " ".join(parts)
-
-
-# ---------------------------------------------------------------------------
 # Module: risk
 # ---------------------------------------------------------------------------
 
@@ -287,8 +197,6 @@ def _liquidity(m: dict[str, Any]) -> str:
 
 _MODULE_GENERATORS = {
     "overview": _overview,
-    "optimization": _optimization,
-    "black_litterman": _black_litterman,
     "risk": _risk,
     "liquidity": _liquidity,
 }
