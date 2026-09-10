@@ -34,10 +34,10 @@ function SnapshotHeader({ title, onNavigate, tab }) {
 
 function SkeletonCard({ rows = 2 }) {
   return (
-    <div className="rounded-xl border border-neutral-800 bg-neutral-950 p-3 space-y-2 animate-pulse">
-      <div className="h-2.5 w-28 bg-neutral-800 rounded" />
+    <div className="panel p-3 space-y-2 animate-pulse">
+      <div className="h-2.5 w-28 bg-white/10 rounded" />
       {Array.from({ length: rows }).map((_, i) => (
-        <div key={i} className="h-4 bg-neutral-800 rounded w-full" />
+        <div key={i} className="h-4 bg-white/10 rounded w-full" />
       ))}
     </div>
   );
@@ -66,7 +66,7 @@ function RiskSnapshotCard({ onNavigate }) {
   if (loading) return <SkeletonCard rows={5} />;
 
   return (
-    <div className="rounded-xl border border-neutral-800 bg-neutral-950 p-3 space-y-2">
+    <div className="panel p-3 space-y-2">
       <SnapshotHeader title="Risk Snapshot" onNavigate={onNavigate} tab="risk" />
 
       {/* VaR / CVaR / GARCH row */}
@@ -76,7 +76,7 @@ function RiskSnapshotCard({ onNavigate }) {
           { label: "CVaR 95%", value: pct(mc?.cvar_95), tone: "text-rose-300" },
           { label: "GARCH Vol", value: pct(garch?.forecast_vol), tone: "text-amber-300" },
         ].map(({ label, value, tone }) => (
-          <div key={label} className="flex-1 rounded-lg border border-neutral-800 bg-black px-2 py-1.5 min-w-0">
+          <div key={label} className="panel-raise flex-1 px-2 py-1.5 min-w-0">
             <div className="text-[9px] uppercase tracking-wider text-neutral-500">{label}</div>
             <div className={`font-mono text-sm font-semibold mt-0.5 ${tone}`}>{value}</div>
           </div>
@@ -89,7 +89,7 @@ function RiskSnapshotCard({ onNavigate }) {
           <div className="text-[9px] uppercase tracking-wider text-neutral-500 mb-1">Historical Stress Tests</div>
           <table className="w-full text-[11px] font-mono">
             <thead>
-              <tr className="text-neutral-500 border-b border-neutral-800">
+              <tr className="text-neutral-500 border-b rule">
                 <th className="font-sans font-normal text-left pb-0.5">Scenario</th>
                 <th className="font-sans font-normal text-right pb-0.5">Return</th>
                 <th className="font-sans font-normal text-right pb-0.5">Max DD</th>
@@ -97,7 +97,7 @@ function RiskSnapshotCard({ onNavigate }) {
             </thead>
             <tbody>
               {stress.map((s) => (
-                <tr key={s.name} className="border-b border-neutral-900 last:border-b-0">
+                <tr key={s.name} className="border-b rule last:border-b-0">
                   <td className="py-0.5 pr-2 text-neutral-300 truncate max-w-[120px]" style={{ maxWidth: "9rem" }}>
                     {s.name.replace(/_/g, " ")}
                   </td>
@@ -135,13 +135,13 @@ function LiquiditySnapshotCard({ onNavigate }) {
   const positions = data?.positions ?? [];
 
   return (
-    <div className="rounded-xl border border-neutral-800 bg-neutral-950 p-3 space-y-2">
+    <div className="panel p-3 space-y-2">
       <SnapshotHeader title="Liquidity Snapshot" onNavigate={onNavigate} tab="liquidity" />
 
       {positions.length > 0 && (
         <table className="w-full text-[11px] font-mono">
           <thead>
-            <tr className="text-neutral-500 border-b border-neutral-800">
+            <tr className="text-neutral-500 border-b rule">
               <th className="font-sans font-normal text-left pb-0.5">Ticker</th>
               <th className="font-sans font-normal text-right pb-0.5">Kelly</th>
               <th className="font-sans font-normal text-right pb-0.5">% ADV</th>
@@ -151,7 +151,7 @@ function LiquiditySnapshotCard({ onNavigate }) {
             {positions.map((p) => {
               const flagged = Math.abs(p.kelly_divergence) > 0.10;
               return (
-                <tr key={p.ticker} className="border-b border-neutral-900 last:border-b-0">
+                <tr key={p.ticker} className="border-b rule last:border-b-0">
                   <td className={`py-0.5 pr-2 font-sans ${flagged ? "text-amber-300" : "text-neutral-200"}`}>
                     {p.ticker}
                     {flagged && <span className="ml-1 text-[9px] text-amber-500">▲</span>}
@@ -198,7 +198,7 @@ export default function OverviewTab({
         <div className="col-span-5 flex flex-col gap-3 min-h-0">
           <RiskSnapshotCard onNavigate={onNavigate} />
           <LiquiditySnapshotCard onNavigate={onNavigate} />
-          <div className="flex-1 min-h-0 overflow-y-auto rounded-xl border border-neutral-800 bg-neutral-950 p-3">
+          <div className="panel flex-1 min-h-0 overflow-y-auto p-3">
             <div className="text-[10px] uppercase tracking-wider text-neutral-400 mb-2">News</div>
             <NewsPanel
               news={news}

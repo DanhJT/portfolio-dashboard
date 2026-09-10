@@ -22,7 +22,7 @@ function FilterChip({ label, count, active, onClick }) {
       className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition ${
         active
           ? "border-white bg-white text-black"
-          : "border-neutral-800 bg-black text-neutral-300 hover:bg-neutral-900"
+          : "border-edge bg-chassis-high text-neutral-300 hover:bg-white/5"
       }`}
       aria-pressed={active}
     >
@@ -96,11 +96,11 @@ export default function NewsPanel({ news, loading, tickers = [] }) {
         </div>
       )}
 
-      <ul className="divide-y divide-neutral-900">
+      <ul className="divide-y divide-white/[0.07]">
         {filtered.map((item, i) => (
           <li key={`${item.ticker}-${i}`} className="py-2 first:pt-0 last:pb-0">
             <div className="flex items-start gap-2">
-              <span className="shrink-0 mt-0.5 inline-flex items-center rounded border border-neutral-800 px-1.5 py-0.5 text-[10px] font-mono uppercase tracking-wider text-neutral-300">
+              <span className="control shrink-0 mt-0.5 inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-mono uppercase tracking-wider text-neutral-300">
                 {item.ticker}
               </span>
               <div className="min-w-0 flex-1">

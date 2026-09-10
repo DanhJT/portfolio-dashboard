@@ -29,7 +29,7 @@ export default function PerformanceSection({
             Performance
           </h2>
           <span
-            className="inline-flex items-center rounded-full border border-neutral-700 bg-black px-2.5 py-0.5 text-xs font-mono text-neutral-200"
+            className="control inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-mono text-neutral-200"
             aria-label={`Current horizon: ${periodLabel}`}
           >
             {periodLabel}

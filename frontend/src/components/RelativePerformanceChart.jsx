@@ -1,4 +1,5 @@
 import React from "react";
+import { AXIS, GRID, SERIES, TICK } from "../chartTheme.js";
 import {
   Area,
   AreaChart,
@@ -15,9 +16,9 @@ const pct = (v) => `${(v * 100).toFixed(1)}%`;
 function ChartTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null;
   const v = payload[0].value;
-  const color = v >= 0 ? "#34d399" : "#fb7185";
+  const color = v >= 0 ? SERIES.positive : SERIES.negative;
   return (
-    <div className="rounded-md border border-neutral-800 bg-black/95 px-3 py-2 text-xs shadow-lg">
+    <div className="control px-3 py-2 text-xs shadow-xl shadow-black/60">
       <div className="text-neutral-400 mb-1">{label}</div>
       <div className="flex items-center gap-2 font-mono">
         <span
@@ -41,7 +42,7 @@ export default function RelativePerformanceChart({
 }) {
   if (!series?.length) {
     return (
-      <div className={`card ${chartHeight} flex items-center justify-center text-neutral-500 text-sm`}>
+      <div className={`panel p-5 ${chartHeight} flex items-center justify-center text-neutral-500 text-sm`}>
         Loading relative performance…
       </div>
     );
@@ -56,7 +57,7 @@ export default function RelativePerformanceChart({
   const lastColor = last >= 0 ? "text-emerald-400" : "text-rose-400";
 
   return (
-    <div className="card">
+    <div className="panel p-5">
       <div className="flex items-baseline justify-between mb-3">
         <div>
           <h2 className="text-sm uppercase tracking-wider text-neutral-400">
@@ -79,33 +80,33 @@ export default function RelativePerformanceChart({
           >
             <defs>
               <linearGradient id="excess-pos" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#34d399" stopOpacity={0.45} />
-                <stop offset="100%" stopColor="#34d399" stopOpacity={0} />
+                <stop offset="0%" stopColor={SERIES.positive} stopOpacity={0.45} />
+                <stop offset="100%" stopColor={SERIES.positive} stopOpacity={0} />
               </linearGradient>
               <linearGradient id="excess-neg" x1="0" y1="1" x2="0" y2="0">
-                <stop offset="0%" stopColor="#fb7185" stopOpacity={0.45} />
-                <stop offset="100%" stopColor="#fb7185" stopOpacity={0} />
+                <stop offset="0%" stopColor={SERIES.negative} stopOpacity={0.45} />
+                <stop offset="100%" stopColor={SERIES.negative} stopOpacity={0} />
               </linearGradient>
             </defs>
-            <CartesianGrid stroke="#262626" strokeDasharray="3 3" />
+            <CartesianGrid stroke={GRID} strokeDasharray="3 3" />
             <XAxis
               dataKey="date"
-              tick={{ fill: "#a3a3a3", fontSize: 11 }}
-              stroke="#404040"
+              tick={{ fill: TICK, fontSize: 11 }}
+              stroke={AXIS}
               minTickGap={32}
             />
             <YAxis
-              tick={{ fill: "#a3a3a3", fontSize: 11 }}
-              stroke="#404040"
+              tick={{ fill: TICK, fontSize: 11 }}
+              stroke={AXIS}
               tickFormatter={pct}
               width={56}
             />
             <Tooltip content={<ChartTooltip />} />
-            <ReferenceLine y={0} stroke="#737373" strokeDasharray="2 2" />
+            <ReferenceLine y={0} stroke={SERIES.zero} strokeDasharray="2 2" />
             <Area
               type="monotone"
               dataKey="excess"
-              stroke="#a3a3a3"
+              stroke={SERIES.benchmark}
               strokeWidth={0}
               fill="url(#excess-pos)"
               isAnimationActive={false}
@@ -123,11 +124,11 @@ export default function RelativePerformanceChart({
             <Area
               type="monotone"
               dataKey="excess"
-              stroke="#e5e5e5"
+              stroke={SERIES.neutral}
               strokeWidth={1.5}
               fill="transparent"
               isAnimationActive={false}
-              activeDot={{ r: 3, fill: "#e5e5e5" }}
+              activeDot={{ r: 3, fill: SERIES.neutral }}
             />
           </AreaChart>
         </ResponsiveContainer>

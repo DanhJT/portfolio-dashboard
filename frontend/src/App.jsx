@@ -32,7 +32,7 @@ const MAIN_TABS = [
 function PeriodSelector({ value, onChange, disabled }) {
   return (
     <div
-      className="inline-flex rounded-md border border-neutral-800 overflow-hidden"
+      className="control inline-flex overflow-hidden"
       title="Horizon — applies to metrics & charts"
     >
       {PERIODS.map((p) => {
@@ -46,7 +46,7 @@ function PeriodSelector({ value, onChange, disabled }) {
             className={`px-3 py-1.5 text-xs font-medium transition ${
               active
                 ? "bg-white text-black"
-                : "bg-black text-neutral-300 hover:bg-neutral-900"
+                : "bg-transparent text-neutral-300 hover:bg-white/5"
             }`}
           >
             {p.label}
@@ -89,7 +89,7 @@ function StrategyBadge({ portfolio }) {
         {label}
       </span>
       {rebalanced && (
-        <span className="font-mono text-neutral-500">
+        <span className="font-mono text-neutral-400">
           Rebalanced {rebalanced}
         </span>
       )}
@@ -150,8 +150,8 @@ export default function App() {
   }, [refresh]);
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <header className="sticky top-0 z-20 border-b border-neutral-900 bg-black/95 backdrop-blur">
+    <div className="min-h-screen bg-chassis text-white">
+      <header className="sticky top-0 z-20 border-b rule bg-chassis/95 backdrop-blur">
         <div className="mx-auto max-w-[1600px] px-6 py-4 flex flex-wrap items-center justify-between gap-4">
           <div>
             <h1 className="text-xl font-semibold tracking-tight text-white">
@@ -174,7 +174,7 @@ export default function App() {
               type="button"
               onClick={refresh}
               disabled={loading}
-              className="inline-flex items-center gap-1.5 rounded-md border border-neutral-800 bg-black px-3 py-1.5 text-xs font-medium text-neutral-200 hover:bg-neutral-900 disabled:cursor-not-allowed disabled:opacity-60"
+              className="control control-hover inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-neutral-200 disabled:cursor-not-allowed disabled:opacity-60"
               aria-label="Refresh data"
               title="Refresh data"
             >
@@ -215,7 +215,7 @@ export default function App() {
         {activeTab === "liquidity" && <LiquidityTab />}
       </main>
 
-      <footer className="mx-auto max-w-[1600px] px-6 py-4 text-xs text-neutral-500">
+      <footer className="mx-auto max-w-[1600px] px-6 py-4 text-xs text-neutral-400">
         Educational use only. Not investment advice. Market data via yfinance.
       </footer>
     </div>

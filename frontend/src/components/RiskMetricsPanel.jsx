@@ -18,7 +18,7 @@ function MetricCard({ label, value, tone = "neutral", tooltip, compact = false }
           ? "text-amber-400"
           : "text-white";
   return (
-    <div className={`group relative rounded-lg border border-neutral-800 bg-neutral-950 ${compact ? "px-2.5 py-1.5" : "px-3 py-2.5"}`}>
+    <div className={`panel group relative ${compact ? "px-2.5 py-1.5" : "px-3 py-2.5"}`}>
       <div className={`${compact ? "text-[9px]" : "text-[10px]"} uppercase tracking-wider text-neutral-400`}>
         {label}
       </div>
@@ -26,7 +26,7 @@ function MetricCard({ label, value, tone = "neutral", tooltip, compact = false }
         {value}
       </div>
       {!compact && tooltip && (
-        <div className="pointer-events-none absolute left-0 top-full mt-2 w-64 rounded-md border border-neutral-800 bg-neutral-950 p-3 text-xs text-neutral-300 opacity-0 shadow-lg transition group-hover:opacity-100 z-10">
+        <div className="control pointer-events-none absolute left-0 top-full mt-2 w-64 p-3 text-xs text-neutral-300 opacity-0 shadow-xl shadow-black/60 transition group-hover:opacity-100 z-10">
           {tooltip}
         </div>
       )}
@@ -41,7 +41,7 @@ export default function RiskMetricsPanel({ metrics, compact = false }) {
         {Array.from({ length: 8 }).map((_, i) => (
           <div
             key={i}
-            className={`rounded-lg border border-neutral-800 bg-neutral-950 ${compact ? "h-9" : "h-14"} animate-pulse`}
+            className={`panel ${compact ? "h-9" : "h-14"} animate-pulse`}
             aria-hidden
           />
         ))}

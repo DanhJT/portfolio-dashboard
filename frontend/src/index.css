@@ -2,6 +2,28 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  /* Console chassis — the face the instrument is built into. Everything that
+     isn't a readout sits at this level. Lifting it off pure black is what
+     makes real shadows possible again. */
+  --chassis: #0d0f11;
+  --chassis-high: #14171a;
+
+  /* Wells — data recesses cut into the chassis. */
+  --well: #000000;
+  --well-raise: #0a0c0e;
+
+  /* Edges. Light comes from above: a recess catches it on its bottom inner
+     edge, a raised face catches it on top. */
+  --lip: rgba(255, 255, 255, 0.05);
+  --rule: rgba(255, 255, 255, 0.07);
+  --edge: rgba(255, 255, 255, 0.09);
+
+  /* Scrollbars — midnight grey, quiet against the wells. */
+  --scroll-thumb: #262e38;
+  --scroll-thumb-hover: #343e4a;
+}
+
 html,
 body,
 #root {
@@ -9,9 +31,96 @@ body,
 }
 
 body {
-  font-feature-settings: "ss01", "cv11";
+  background: var(--chassis);
+  /* Fixed-width figures so every column of numbers aligns on the decimal,
+     the way a terminal grid does. IBM Plex ships tabular by default in the
+     mono, but the sans needs asking. */
+  font-variant-numeric: tabular-nums;
 }
 
-.card {
-  @apply bg-neutral-950 border border-neutral-800 rounded-xl p-5 shadow-lg shadow-black/40;
+@layer components {
+  /* A recessed readout. No border — the shape comes from the chassis being
+     lighter around it, plus light catching the bottom inner edge. */
+  .panel {
+    background: var(--well);
+    border-radius: 6px;
+    box-shadow: inset 0 -1px 0 var(--lip);
+  }
+
+  /* Nested inside a well. Goes lighter, never darker — you can't recess below
+     true black, so depth has to continue upward. */
+  .panel-raise {
+    background: var(--well-raise);
+    border-radius: 4px;
+  }
+
+  /* Raised: buttons, tabs, chips, tooltips — anything above the chassis.
+     Highlight on top, shadow cast downward. */
+  .control {
+    background: var(--chassis-high);
+    border: 1px solid var(--edge);
+    border-radius: 6px;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.06),
+      0 1px 2px rgba(0, 0, 0, 0.6);
+  }
+
+  .control-hover:hover {
+    background: #1a1e22;
+  }
+
+  /* An input is a recess you type into. */
+  .field {
+    background: var(--well);
+    border: 1px solid transparent;
+    border-radius: 6px;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.9);
+  }
+
+  .field:focus {
+    outline: none;
+    border-color: var(--edge);
+  }
+
+  /* Dividers: table rows, section rules, header underlines. */
+  .rule {
+    border-color: var(--rule);
+  }
+}
+
+/* Scrollbars. The browser default is a pale bar, which on a black console
+   reads as a seam of daylight. Slim and midnight grey instead, on a
+   transparent track.
+
+   Thumb *length* is left alone deliberately: the browser sizes it to the
+   viewport/content ratio, so a long news list gives a short thumb that
+   travels far per scroll, and a short list gives a long thumb that barely
+   moves. That proportional feedback is the scrollbar's actual job.
+
+   Both syntaxes are set on purpose. Chrome 121+, Firefox and Safari 18.2+
+   honour the standard properties and ignore the -webkit- pseudo-elements;
+   older engines skip the standard ones and fall through to -webkit-. Either
+   path lands on slim + midnight grey. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scroll-thumb) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scroll-thumb);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scroll-thumb-hover);
 }

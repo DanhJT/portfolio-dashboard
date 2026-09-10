@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { AXIS, GRID, LEGEND, SERIES, TICK, TOOLTIP_BG, TOOLTIP_BORDER } from "../../chartTheme.js";
 import {
   Area,
   AreaChart,
@@ -40,7 +41,7 @@ function MonteCarloSection({ data }) {
     p95: data.percentile_paths.p95[d],
   }));
   return (
-    <div className="rounded-xl border border-neutral-800 bg-neutral-950 p-4 space-y-4">
+    <div className="panel p-4 space-y-4">
       <div className="flex items-baseline justify-between">
         <h3 className="text-sm uppercase tracking-wider text-neutral-400">
           Monte Carlo VaR
@@ -54,25 +55,25 @@ function MonteCarloSection({ data }) {
           <AreaChart data={chartData} margin={{ top: 8, right: 8, bottom: 8, left: 8 }}>
             <defs>
               <linearGradient id="mc-band" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#5eead4" stopOpacity={0.35} />
-                <stop offset="100%" stopColor="#5eead4" stopOpacity={0.05} />
+                <stop offset="0%" stopColor={SERIES.portfolio} stopOpacity={0.35} />
+                <stop offset="100%" stopColor={SERIES.portfolio} stopOpacity={0.05} />
               </linearGradient>
             </defs>
-            <CartesianGrid stroke="#262626" strokeDasharray="3 3" />
-            <XAxis dataKey="day" tick={{ fill: "#a3a3a3", fontSize: 11 }} stroke="#404040" />
-            <YAxis tick={{ fill: "#a3a3a3", fontSize: 11 }} stroke="#404040" />
+            <CartesianGrid stroke={GRID} strokeDasharray="3 3" />
+            <XAxis dataKey="day" tick={{ fill: TICK, fontSize: 11 }} stroke={AXIS} />
+            <YAxis tick={{ fill: TICK, fontSize: 11 }} stroke={AXIS} />
             <Tooltip
-              contentStyle={{ background: "#0a0a0a", border: "1px solid #262626", fontSize: 12 }}
+              contentStyle={{ background: TOOLTIP_BG, border: `1px solid ${TOOLTIP_BORDER}`, fontSize: 12 }}
               formatter={(v) => (typeof v === "number" ? v.toFixed(1) : v)}
             />
-            <Legend wrapperStyle={{ fontSize: 12, color: "#cbd5e1" }} />
+            <Legend wrapperStyle={{ fontSize: 12, color: LEGEND }} />
             <Area type="monotone" dataKey="p95" stroke="transparent" fill="url(#mc-band)" />
             <Area type="monotone" dataKey="p75" stroke="transparent" fill="url(#mc-band)" />
             <Area type="monotone" dataKey="p25" stroke="transparent" fill="url(#mc-band)" />
             <Area type="monotone" dataKey="p05" stroke="transparent" fill="url(#mc-band)" />
-            <Line type="monotone" dataKey="p50" stroke="#5eead4" strokeWidth={2} dot={false} name="median" />
-            <Line type="monotone" dataKey="p95" stroke="#a3a3a3" strokeWidth={1} dot={false} name="95th" />
-            <Line type="monotone" dataKey="p05" stroke="#a3a3a3" strokeWidth={1} dot={false} name="5th" />
+            <Line type="monotone" dataKey="p50" stroke={SERIES.portfolio} strokeWidth={2} dot={false} name="median" />
+            <Line type="monotone" dataKey="p95" stroke={SERIES.benchmark} strokeWidth={1} dot={false} name="95th" />
+            <Line type="monotone" dataKey="p05" stroke={SERIES.benchmark} strokeWidth={1} dot={false} name="5th" />
           </AreaChart>
         </ResponsiveContainer>
       </div>
@@ -123,7 +124,7 @@ function StressSection({ scenarios, onRunCustom, customResult, allowCustom = tru
 
   const all = customResult ? [...scenarios, customResult] : scenarios;
   return (
-    <div className="rounded-xl border border-neutral-800 bg-neutral-950 p-4 space-y-4">
+    <div className="panel p-4 space-y-4">
       <div className="flex items-baseline justify-between">
         <h3 className="text-sm uppercase tracking-wider text-neutral-400">
           Historical Stress Tests
@@ -134,7 +135,7 @@ function StressSection({ scenarios, onRunCustom, customResult, allowCustom = tru
       </div>
       <table className="w-full text-sm font-mono">
         <thead>
-          <tr className="text-left text-neutral-400 border-b border-neutral-800">
+          <tr className="text-left text-neutral-400 border-b rule">
             <th className="py-2 pr-3 font-sans font-medium">Scenario</th>
             <th className="py-2 pr-3 font-sans font-medium">Period</th>
             <th className="py-2 pr-3 font-sans font-medium text-right">Return</th>
@@ -144,7 +145,7 @@ function StressSection({ scenarios, onRunCustom, customResult, allowCustom = tru
         </thead>
         <tbody>
           {all.map((s, i) => (
-            <tr key={`${s.name}-${i}`} className="border-b border-neutral-900 last:border-b-0">
+            <tr key={`${s.name}-${i}`} className="border-b rule last:border-b-0">
               <td className="py-2 pr-3 font-sans text-white">{s.name}</td>
               <td className="py-2 pr-3 text-xs text-neutral-400">
                 {s.start} → {s.end}
@@ -163,7 +164,7 @@ function StressSection({ scenarios, onRunCustom, customResult, allowCustom = tru
         </tbody>
       </table>
       {allowCustom && (
-        <div className="rounded-md border border-neutral-800 bg-black p-3 flex flex-wrap items-end gap-3">
+        <div className="panel-raise p-3 flex flex-wrap items-end gap-3">
           <div>
             <label className="block text-[10px] uppercase tracking-wider text-neutral-500 mb-1">
               Name
@@ -172,7 +173,7 @@ function StressSection({ scenarios, onRunCustom, customResult, allowCustom = tru
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="bg-black border border-neutral-800 text-neutral-200 rounded px-2 py-1 text-sm w-40"
+              className="field text-neutral-200 px-2 py-1 text-sm w-40"
             />
           </div>
           <div>
@@ -183,7 +184,7 @@ function StressSection({ scenarios, onRunCustom, customResult, allowCustom = tru
               type="date"
               value={start}
               onChange={(e) => setStart(e.target.value)}
-              className="bg-black border border-neutral-800 text-neutral-200 rounded px-2 py-1 text-sm"
+              className="field text-neutral-200 px-2 py-1 text-sm"
             />
           </div>
           <div>
@@ -194,7 +195,7 @@ function StressSection({ scenarios, onRunCustom, customResult, allowCustom = tru
               type="date"
               value={end}
               onChange={(e) => setEnd(e.target.value)}
-              className="bg-black border border-neutral-800 text-neutral-200 rounded px-2 py-1 text-sm"
+              className="field text-neutral-200 px-2 py-1 text-sm"
             />
           </div>
           <button
@@ -229,7 +230,7 @@ function GarchSection({ data }) {
   }));
 
   return (
-    <div className="rounded-xl border border-neutral-800 bg-neutral-950 p-4 space-y-4">
+    <div className="panel p-4 space-y-4">
       <div className="flex items-baseline justify-between">
         <h3 className="text-sm uppercase tracking-wider text-neutral-400">
           GARCH(1,1) Volatility
@@ -247,16 +248,16 @@ function GarchSection({ data }) {
       <div className="h-56">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={history} margin={{ top: 8, right: 8, bottom: 8, left: 8 }}>
-            <CartesianGrid stroke="#262626" strokeDasharray="3 3" />
-            <XAxis dataKey="date" tick={{ fill: "#a3a3a3", fontSize: 11 }} stroke="#404040" minTickGap={48} />
-            <YAxis tick={{ fill: "#a3a3a3", fontSize: 11 }} stroke="#404040" tickFormatter={(v) => pct(v)} />
+            <CartesianGrid stroke={GRID} strokeDasharray="3 3" />
+            <XAxis dataKey="date" tick={{ fill: TICK, fontSize: 11 }} stroke={AXIS} minTickGap={48} />
+            <YAxis tick={{ fill: TICK, fontSize: 11 }} stroke={AXIS} tickFormatter={(v) => pct(v)} />
             <Tooltip
-              contentStyle={{ background: "#0a0a0a", border: "1px solid #262626", fontSize: 12 }}
+              contentStyle={{ background: TOOLTIP_BG, border: `1px solid ${TOOLTIP_BORDER}`, fontSize: 12 }}
               formatter={(v) => pct(v, 1)}
             />
-            <Legend wrapperStyle={{ fontSize: 12, color: "#cbd5e1" }} />
-            <Line type="monotone" dataKey="realised" stroke="#a3a3a3" dot={false} strokeWidth={1.5} name="21d realised" />
-            <Line type="monotone" dataKey="garch" stroke="#5eead4" dot={false} strokeWidth={1.5} name="GARCH cond." />
+            <Legend wrapperStyle={{ fontSize: 12, color: LEGEND }} />
+            <Line type="monotone" dataKey="realised" stroke={SERIES.benchmark} dot={false} strokeWidth={1.5} name="21d realised" />
+            <Line type="monotone" dataKey="garch" stroke={SERIES.portfolio} dot={false} strokeWidth={1.5} name="GARCH cond." />
           </LineChart>
         </ResponsiveContainer>
       </div>
@@ -265,20 +266,20 @@ function GarchSection({ data }) {
           <AreaChart data={forward} margin={{ top: 8, right: 8, bottom: 8, left: 8 }}>
             <defs>
               <linearGradient id="g-band" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#facc15" stopOpacity={0.35} />
-                <stop offset="100%" stopColor="#facc15" stopOpacity={0.05} />
+                <stop offset="0%" stopColor={SERIES.warning} stopOpacity={0.35} />
+                <stop offset="100%" stopColor={SERIES.warning} stopOpacity={0.05} />
               </linearGradient>
             </defs>
-            <CartesianGrid stroke="#262626" strokeDasharray="3 3" />
-            <XAxis dataKey="date" tick={{ fill: "#a3a3a3", fontSize: 11 }} stroke="#404040" />
-            <YAxis tick={{ fill: "#a3a3a3", fontSize: 11 }} stroke="#404040" tickFormatter={(v) => pct(v)} />
+            <CartesianGrid stroke={GRID} strokeDasharray="3 3" />
+            <XAxis dataKey="date" tick={{ fill: TICK, fontSize: 11 }} stroke={AXIS} />
+            <YAxis tick={{ fill: TICK, fontSize: 11 }} stroke={AXIS} tickFormatter={(v) => pct(v)} />
             <Tooltip
-              contentStyle={{ background: "#0a0a0a", border: "1px solid #262626", fontSize: 12 }}
+              contentStyle={{ background: TOOLTIP_BG, border: `1px solid ${TOOLTIP_BORDER}`, fontSize: 12 }}
               formatter={(v) => pct(v, 1)}
             />
             <Area type="monotone" dataKey="high" stroke="transparent" fill="url(#g-band)" />
             <Area type="monotone" dataKey="low" stroke="transparent" fill="url(#g-band)" />
-            <Line type="monotone" dataKey="forecast" stroke="#facc15" dot={false} strokeWidth={2} name="forecast" />
+            <Line type="monotone" dataKey="forecast" stroke={SERIES.warning} dot={false} strokeWidth={2} name="forecast" />
           </AreaChart>
         </ResponsiveContainer>
       </div>
@@ -293,7 +294,7 @@ function GarchSection({ data }) {
         </h4>
         <table className="w-full text-xs font-mono">
           <thead>
-            <tr className="text-left text-neutral-500 border-b border-neutral-800">
+            <tr className="text-left text-neutral-500 border-b rule">
               <th className="py-1 pr-3 font-sans">Ticker</th>
               <th className="py-1 pr-3 font-sans text-right">α</th>
               <th className="py-1 pr-3 font-sans text-right">β</th>
@@ -304,7 +305,7 @@ function GarchSection({ data }) {
           </thead>
           <tbody>
             {data.assets.map((a) => (
-              <tr key={a.ticker} className="border-b border-neutral-900 last:border-b-0">
+              <tr key={a.ticker} className="border-b rule last:border-b-0">
                 <td className="py-1 pr-3 font-sans text-white">{a.ticker}</td>
                 <td className="py-1 pr-3 text-right">{a.alpha.toFixed(3)}</td>
                 <td className="py-1 pr-3 text-right">{a.beta.toFixed(3)}</td>
@@ -330,7 +331,7 @@ function StatPill({ label, value, tone = "neutral" }) {
     bad: "text-rose-300",
   };
   return (
-    <div className="rounded-lg border border-neutral-800 bg-black px-3 py-2">
+    <div className="panel-raise px-3 py-2">
       <div className="text-[10px] uppercase tracking-wider text-neutral-400">{label}</div>
       <div className={`font-mono text-sm font-semibold mt-0.5 ${tones[tone]}`}>{value}</div>
     </div>

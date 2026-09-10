@@ -1,4 +1,5 @@
 import React from "react";
+import { AXIS, GRID, LEGEND, SERIES, TICK } from "../chartTheme.js";
 import {
   CartesianGrid,
   Legend,
@@ -15,7 +16,7 @@ const pct = (v) => `${(v * 100).toFixed(1)}%`;
 function ChartTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="rounded-md border border-neutral-800 bg-black/95 px-3 py-2 text-xs shadow-lg">
+    <div className="control px-3 py-2 text-xs shadow-xl shadow-black/60">
       <div className="text-neutral-400 mb-1">{label}</div>
       {payload.map((p) => (
         <div key={p.dataKey} className="flex items-center gap-2 font-mono">
@@ -34,7 +35,7 @@ function ChartTooltip({ active, payload, label }) {
 export default function PerformanceChart({ series, benchmarkTicker = "SPY", chartHeight = "h-64" }) {
   if (!series?.length) {
     return (
-      <div className={`card ${chartHeight} flex items-center justify-center text-neutral-500 text-sm`}>
+      <div className={`panel p-5 ${chartHeight} flex items-center justify-center text-neutral-500 text-sm`}>
         Loading performance series…
       </div>
     );
@@ -47,7 +48,7 @@ export default function PerformanceChart({ series, benchmarkTicker = "SPY", char
   }));
 
   return (
-    <div className="card">
+    <div className="panel p-5">
       <div className="flex items-baseline justify-between mb-3">
         <h2 className="text-sm uppercase tracking-wider text-neutral-400">
           Cumulative Return
@@ -62,28 +63,28 @@ export default function PerformanceChart({ series, benchmarkTicker = "SPY", char
             data={data}
             margin={{ top: 8, right: 12, left: 0, bottom: 0 }}
           >
-            <CartesianGrid stroke="#262626" strokeDasharray="3 3" />
+            <CartesianGrid stroke={GRID} strokeDasharray="3 3" />
             <XAxis
               dataKey="date"
-              tick={{ fill: "#a3a3a3", fontSize: 11 }}
-              stroke="#404040"
+              tick={{ fill: TICK, fontSize: 11 }}
+              stroke={AXIS}
               minTickGap={32}
             />
             <YAxis
-              tick={{ fill: "#a3a3a3", fontSize: 11 }}
-              stroke="#404040"
+              tick={{ fill: TICK, fontSize: 11 }}
+              stroke={AXIS}
               tickFormatter={pct}
               width={56}
             />
             <Tooltip content={<ChartTooltip />} />
             <Legend
-              wrapperStyle={{ fontSize: 12, color: "#e5e5e5" }}
+              wrapperStyle={{ fontSize: 12, color: LEGEND }}
               iconType="circle"
             />
             <Line
               type="monotone"
               dataKey="portfolio"
-              stroke="#5eead4"
+              stroke={SERIES.portfolio}
               strokeWidth={2}
               dot={false}
               isAnimationActive={false}
@@ -91,7 +92,7 @@ export default function PerformanceChart({ series, benchmarkTicker = "SPY", char
             <Line
               type="monotone"
               dataKey="benchmark"
-              stroke="#a3a3a3"
+              stroke={SERIES.benchmark}
               strokeWidth={1.5}
               strokeDasharray="4 3"
               dot={false}

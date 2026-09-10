@@ -32,7 +32,7 @@ export default function CommentaryButton({ metrics, module = "overview", label =
   }
 
   return (
-    <div className="rounded-xl border border-neutral-800 bg-neutral-950 p-4">
+    <div className="panel p-4">
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm uppercase tracking-wider text-neutral-400">
           AI Commentary
@@ -58,7 +58,7 @@ export default function CommentaryButton({ metrics, module = "overview", label =
         </div>
       )}
       {commentary && !error && (
-        <div className="mt-3 rounded-md border border-neutral-800 bg-black p-3 text-sm leading-relaxed text-neutral-200 whitespace-pre-wrap">
+        <div className="panel-raise mt-3 p-3 text-sm leading-relaxed text-neutral-200 whitespace-pre-wrap">
           {commentary}
         </div>
       )}

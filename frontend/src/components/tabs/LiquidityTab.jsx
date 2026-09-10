@@ -58,12 +58,12 @@ function AumInput({ value, onCommit }) {
         onChange={(e) => setDraft(e.target.value)}
         onBlur={commit}
         onKeyDown={handleKey}
-        className="w-36 rounded border border-neutral-800 bg-black px-2 py-1 text-sm text-neutral-200 font-mono focus:outline-none focus:border-neutral-600"
+        className="field w-36 px-2 py-1 text-sm text-neutral-200 font-mono"
       />
       <button
         type="button"
         onClick={commit}
-        className="rounded border border-neutral-800 px-2 py-1 text-xs text-neutral-400 hover:bg-neutral-900 hover:text-white"
+        className="control control-hover px-2 py-1 text-xs text-neutral-400 hover:text-white"
       >
         Apply
       </button>
@@ -119,7 +119,7 @@ export default function LiquidityTab() {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-xl border border-neutral-800 bg-neutral-950 p-4 space-y-4">
+      <div className="panel p-4 space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="text-sm uppercase tracking-wider text-neutral-400">
@@ -135,7 +135,7 @@ export default function LiquidityTab() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm font-mono">
             <thead>
-              <tr className="text-left text-neutral-400 border-b border-neutral-800">
+              <tr className="text-left text-neutral-400 border-b rule">
                 <th className="py-2 pr-4 font-sans font-medium">Ticker</th>
                 <th className="py-2 pr-4 font-sans font-medium text-right">ADV</th>
                 <th className="py-2 pr-4 font-sans font-medium text-right">Position</th>
@@ -152,7 +152,7 @@ export default function LiquidityTab() {
                 return (
                   <tr
                     key={p.ticker}
-                    className={`border-b border-neutral-900 last:border-b-0 ${
+                    className={`border-b rule last:border-b-0 ${
                       kellyDivergent ? "bg-amber-950/20" : ""
                     }`}
                   >
@@ -195,7 +195,7 @@ export default function LiquidityTab() {
           </table>
         </div>
 
-        <div className="rounded-md border border-neutral-800 bg-black px-3 py-2 text-xs text-neutral-500 space-y-0.5">
+        <div className="panel-raise px-3 py-2 text-xs text-neutral-500 space-y-0.5">
           <p>
             <span className="text-amber-300">Δ&gt;10pp</span> — Kelly weight diverges &gt;10 percentage points from current weight.
           </p>
