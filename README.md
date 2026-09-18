@@ -96,6 +96,28 @@ All `/api/portfolio/*` endpoints accept optional query params:
 `period` is one of `3mo`, `6mo`, `1y`, `2y`. If omitted, the default
 portfolio is used: 25% AAPL, 25% MSFT, 20% NVDA, 15% JPM, 15% BRK-B.
 
+## Strategy universe
+
+The strategy ranks **all current S&P 500 constituents**, read from
+[backend/data/sp500_constituents.csv](backend/data/sp500_constituents.csv)
+(symbol, name, GICS sector, CIK). Nothing scrapes at runtime, so every
+snapshot run is reproducible from the repo alone.
+
+Refresh the list after S&P's quarterly index changes:
+
+```bash
+backend/.venv/bin/python backend/scripts/update_sp500.py
+```
+
+That rewrites the CSV and `frontend/src/sp500Sectors.json` (the ticker → GICS
+sector map for the frontend). Commit both. Symbols use Yahoo's
+convention (`BRK-B`, not `BRK.B`), and the CIK column lets the strategy collapse
+multiple share classes of one issuer (GOOGL/GOOG) into a single position.
+
+Because the universe is the *current* index membership rather than
+point-in-time history, it is only as fresh as the last refresh — worth noting
+in any write-up, since the portfolio is run forward rather than backtested.
+
 ## Risk metric definitions
 
 - **Annualised return** — CAGR implied by the daily portfolio return series.
@@ -167,6 +189,18 @@ This regenerates the snapshot and pushes it.
 ```bash
 cd backend && python generate_snapshot.py   # writes ../frontend/public/snapshot.json
 ```
+
+### Env vars
+
+| Var                 | Effect                                                                 |
+|---------------------|------------------------------------------------------------------------|
+| `FORCE_REBALANCE=1` | `generate_snapshot.py` re-screens the universe on a non-rebalance day. |
+| `SCREEN_ON_STARTUP=1` | `main.py` runs the full screen at startup instead of seeding holdings from `snapshot.json`. |
+
+Holdings are only re-screened on the first US trading day of the month; every
+other daily run keeps the existing tickers and weights and just refreshes
+prices, risk and commentary. That matches the monthly methodology and keeps the
+S&P 500 screen from making hundreds of Yahoo calls a day.
 
 ## Notes
 

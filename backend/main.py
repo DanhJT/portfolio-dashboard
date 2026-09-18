@@ -2,8 +2,11 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
+import os
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -25,12 +28,40 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
+SNAPSHOT_PATH = Path(__file__).resolve().parent.parent / "frontend" / "public" / "snapshot.json"
+
+
+def _portfolio_from_snapshot() -> dict | None:
+    """The holdings recorded in the committed snapshot, if it has any.
+
+    Screening the full S&P 500 takes minutes, and holdings only change on the
+    monthly rebalance, so local startup (and every `--reload` restart) reuses
+    the snapshot's portfolio instead of re-running the screen.
+    """
+    try:
+        blob = json.loads(SNAPSHOT_PATH.read_text())
+    except (OSError, ValueError) as exc:
+        logger.info("no usable snapshot to seed from (%s)", exc)
+        return None
+    portfolio = blob.get("portfolio") or {}
+    if portfolio.get("tickers") and portfolio.get("weights"):
+        return portfolio
+    return None
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Run the strategy once at startup and arm the monthly rebalance scheduler."""
-    logger.info("running value-momentum strategy at startup…")
-    portfolio = await asyncio.to_thread(run_value_momentum_strategy)
+    """Seed the portfolio at startup and arm the monthly rebalance scheduler."""
+    portfolio = None if os.environ.get("SCREEN_ON_STARTUP") == "1" else _portfolio_from_snapshot()
+    if portfolio:
+        logger.info(
+            "seeded portfolio from snapshot.json (rebalanced_at %s) — "
+            "set SCREEN_ON_STARTUP=1 to re-run the screen instead",
+            portfolio.get("rebalanced_at"),
+        )
+    else:
+        logger.info("running value-momentum strategy at startup…")
+        portfolio = await asyncio.to_thread(run_value_momentum_strategy)
     app.state.portfolio = portfolio
     app.state.cache = {}
     logger.info(

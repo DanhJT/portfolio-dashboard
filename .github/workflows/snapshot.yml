@@ -4,13 +4,20 @@ name: Refresh data snapshot
 # it. The commit triggers Vercel's auto-deploy, so the static dashboard always
 # serves fresh daily data without a live backend.
 #
-# Runs daily after the US market has closed and settled. Can also be triggered
-# manually from the Actions tab (workflow_dispatch).
+# Runs daily after the US market has closed and settled. Holdings are only
+# re-screened on the first US trading day of the month; other days hold the
+# existing portfolio and refresh prices/risk. Can also be triggered manually
+# from the Actions tab (workflow_dispatch), optionally forcing a fresh screen.
 
 on:
   schedule:
     - cron: "0 7 * * *" # 07:00 UTC daily (~after US EOD data settles)
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      force_rebalance:
+        description: "Re-screen the S&P 500 now instead of holding current positions"
+        type: boolean
+        default: false
 
 # Never let two refreshes run at once.
 concurrency:
@@ -41,6 +48,9 @@ jobs:
         working-directory: backend
         # The generator exits non-zero on failure and leaves the existing
         # snapshot untouched, so a bad data day never publishes an empty file.
+        # Scheduled runs have no inputs, so FORCE_REBALANCE stays empty there.
+        env:
+          FORCE_REBALANCE: ${{ inputs.force_rebalance && '1' || '' }}
         run: python generate_snapshot.py
 
       - name: Commit snapshot if changed

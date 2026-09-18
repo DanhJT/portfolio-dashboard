@@ -28,6 +28,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import os
 import sys
 import time
 from pathlib import Path
@@ -280,15 +281,22 @@ def _commentary_section(metrics_1y: dict, mc: dict | None, stress: dict | None,
 # Orchestration
 # ---------------------------------------------------------------------------
 
-def _load_existing_rebalanced_at() -> str | None:
-    """Read rebalanced_at from the existing snapshot, if any."""
+def _load_existing_portfolio() -> dict[str, Any] | None:
+    """Read the portfolio section of the existing snapshot, if it has one."""
     try:
         if SNAPSHOT_PATH.exists():
             existing = json.loads(SNAPSHOT_PATH.read_text())
-            return existing.get("portfolio", {}).get("rebalanced_at")
+            portfolio = existing.get("portfolio") or {}
+            if portfolio.get("tickers") and portfolio.get("weights"):
+                return portfolio
     except Exception:  # noqa: BLE001
         pass
     return None
+
+
+def _is_usable(portfolio: dict[str, Any] | None) -> bool:
+    """True for a real screened portfolio (not the equal-weight fallback)."""
+    return bool(portfolio) and portfolio.get("strategy") != "equal-weight-fallback"
 
 
 def build_snapshot() -> dict[str, Any]:
@@ -296,7 +304,9 @@ def build_snapshot() -> dict[str, Any]:
     from datetime import date, datetime, timezone
 
     today = date.today()
-    is_rebalance_day = _is_first_trading_day_of_month(today)
+    forced = os.environ.get("FORCE_REBALANCE") == "1"
+    is_rebalance_day = _is_first_trading_day_of_month(today) or forced
+    existing = _load_existing_portfolio()
 
     # Determine the correct rebalanced_at:
     # - On a genuine rebalance day (first trading day of the month): stamp today.
@@ -307,17 +317,37 @@ def build_snapshot() -> dict[str, Any]:
         rebalanced_at = datetime.combine(today, datetime.min.time()).replace(
             tzinfo=timezone.utc
         ).isoformat()
-        logger.info("today is a rebalance day (%s) — running fresh strategy", today)
     else:
-        rebalanced_at = _load_existing_rebalanced_at()
-        logger.info(
-            "not a rebalance day (%s) — preserving existing rebalanced_at: %s",
-            today,
-            rebalanced_at,
-        )
+        rebalanced_at = (existing or {}).get("rebalanced_at")
 
-    logger.info("running strategy…")
-    portfolio = run_value_momentum_strategy(rebalanced_at=rebalanced_at)
+    # Holdings are monthly by design, and screening the full S&P 500 costs
+    # hundreds of Yahoo calls, so only re-screen on a rebalance day (or when
+    # we have no usable portfolio to hold). Prices and risk still refresh daily.
+    if not is_rebalance_day and _is_usable(existing):
+        logger.info(
+            "not a rebalance day (%s) — holding existing portfolio of %d names "
+            "(rebalanced_at %s); skipping the screen",
+            today, len(existing["tickers"]), rebalanced_at,
+        )
+        portfolio = dict(existing)
+    else:
+        if forced:
+            logger.info("FORCE_REBALANCE=1 — running fresh strategy on %s", today)
+        elif is_rebalance_day:
+            logger.info("today is a rebalance day (%s) — running fresh strategy", today)
+        else:
+            logger.info("no usable existing portfolio — running fresh strategy on %s", today)
+        logger.info("running strategy…")
+        portfolio = run_value_momentum_strategy(rebalanced_at=rebalanced_at)
+        # A fallback basket is worse than last month's real holdings, so keep
+        # those if the screen degraded (e.g. Yahoo rate-limited the run).
+        if not _is_usable(portfolio) and _is_usable(existing):
+            logger.error(
+                "screen degraded to %s — keeping the existing portfolio instead",
+                portfolio["strategy"],
+            )
+            portfolio = dict(existing)
+
     tickers = list(portfolio["tickers"])
     weights = list(portfolio["weights"])
     weight_map = dict(zip(tickers, weights))
