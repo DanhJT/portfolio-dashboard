@@ -22,3 +22,13 @@ export const SERIES = {
   neutral: "#e5e5e5",
   zero: "#737373",
 };
+
+// Identity colors for holdings (e.g. the weights donut). Fixed order, assigned
+// by ticker position — never reuse SERIES here, green/red already mean gain/loss.
+// Neon steps to match the dashboard's teal accent; order validated for CVD
+// separation and contrast on the black well (intentionally brighter than the
+// usual lightness band).
+export const CATEGORICAL = ["#5eead4", "#e879f9", "#facc15", "#818cf8", "#fb923c", "#38bdf8", "#f472b6"];
+
+// Deeper end of each slot's gradient (same hue family, so identity holds).
+export const CATEGORICAL_DEEP = ["#0891b2", "#9333ea", "#d97706", "#4f46e5", "#ea580c", "#0369a1", "#be185d"];

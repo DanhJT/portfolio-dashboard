@@ -8,24 +8,25 @@ const pct = (v, digits = 2) =>
 const num = (v, digits = 2) =>
   v === null || v === undefined || Number.isNaN(v) ? "—" : v.toFixed(digits);
 
-function MetricCard({ label, value, tone = "neutral", tooltip, compact = false }) {
-  const toneClass =
-    tone === "good"
-      ? "text-emerald-400"
-      : tone === "bad"
-        ? "text-rose-400"
-        : tone === "warn"
-          ? "text-amber-400"
-          : "text-white";
+const toneClass = (tone) =>
+  tone === "good"
+    ? "text-emerald-400"
+    : tone === "bad"
+      ? "text-rose-400"
+      : tone === "warn"
+        ? "text-amber-400"
+        : "text-white";
+
+function MetricCard({ label, value, tone = "neutral", tooltip }) {
   return (
-    <div className={`panel group relative ${compact ? "px-2.5 py-1.5" : "px-3 py-2.5"}`}>
-      <div className={`${compact ? "text-[9px]" : "text-[10px]"} uppercase tracking-wider text-neutral-400`}>
+    <div className="panel group relative px-3 py-2.5">
+      <div className="text-[10px] uppercase tracking-wider text-neutral-400">
         {label}
       </div>
-      <div className={`font-mono font-semibold tracking-tight mt-0.5 ${compact ? "text-sm" : "text-lg"} ${toneClass}`}>
+      <div className={`font-mono font-semibold tracking-tight mt-0.5 text-lg ${toneClass(tone)}`}>
         {value}
       </div>
-      {!compact && tooltip && (
+      {tooltip && (
         <div className="control pointer-events-none absolute left-0 top-full mt-2 w-64 p-3 text-xs text-neutral-300 opacity-0 shadow-xl shadow-black/60 transition group-hover:opacity-100 z-10">
           {tooltip}
         </div>
@@ -34,16 +35,27 @@ function MetricCard({ label, value, tone = "neutral", tooltip, compact = false }
   );
 }
 
+// Compact mode: one thin strip, label and value side by side.
+function MetricCell({ short, label, value, tone = "neutral", tooltip }) {
+  return (
+    <div
+      className="flex items-baseline justify-between gap-1 px-2.5 py-1 min-w-0"
+      title={`${label} — ${tooltip}`}
+    >
+      <span className="text-[9px] uppercase tracking-wider text-neutral-300 truncate">{short}</span>
+      <span className={`font-mono text-xs font-semibold tracking-tight ${toneClass(tone)}`}>{value}</span>
+    </div>
+  );
+}
+
 export default function RiskMetricsPanel({ metrics, compact = false }) {
   if (!metrics) {
-    return (
+    return compact ? (
+      <div className="panel h-7 animate-pulse" aria-hidden />
+    ) : (
       <div className="grid grid-cols-4 md:grid-cols-8 gap-2">
         {Array.from({ length: 8 }).map((_, i) => (
-          <div
-            key={i}
-            className={`panel ${compact ? "h-9" : "h-14"} animate-pulse`}
-            aria-hidden
-          />
+          <div key={i} className="panel h-14 animate-pulse" aria-hidden />
         ))}
       </div>
     );
@@ -66,16 +78,32 @@ export default function RiskMetricsPanel({ metrics, compact = false }) {
   const alphaTone = metrics.alpha > 0.02 ? "good" : metrics.alpha > 0 ? "warn" : "bad";
   const betaTone = metrics.beta < 0.8 ? "good" : metrics.beta < 1.2 ? "neutral" : "warn";
 
+  const items = [
+    { short: "Return",label: "Ann. Return", value: pct(metrics.annualised_return), tone: retTone, tooltip: "Compound annual growth rate of the portfolio over the selected period." },
+    { short: "Volatility",label: "Ann. Volatility", value: pct(metrics.annualised_volatility), tone: volTone, tooltip: "Standard deviation of daily returns × √252. A measure of total risk." },
+    { short: "Sharpe", label: "Sharpe", value: num(metrics.sharpe_ratio), tone: sharpeTone, tooltip: "Excess return over the 4.5% risk-free rate per unit of volatility. >1 is generally considered good." },
+    { short: "Alpha", label: "Alpha (ann.)", value: pct(metrics.alpha), tone: alphaTone, tooltip: "Jensen's alpha vs SPY: annualised excess return above what CAPM predicts given the portfolio's beta." },
+    { short: "Beta", label: "Beta", value: num(metrics.beta, 2), tone: betaTone, tooltip: "Sensitivity to SPY movements. β < 1 = less volatile than market, β > 1 = more volatile." },
+    { short: "Max DD", label: "Max Drawdown", value: pct(metrics.max_drawdown), tone: "bad", tooltip: "Largest peak-to-trough decline in the cumulative return curve over the period." },
+    { short: "VaR 95", label: "VaR 95%", value: pct(metrics.var_95), tone: "warn", tooltip: "Historical Value-at-Risk: with 95% confidence, daily losses should not exceed this figure." },
+    { short: "CVaR 95", label: "CVaR 95%", value: pct(metrics.cvar_95), tone: "bad", tooltip: "Expected Shortfall: average loss on days when the VaR threshold is breached." },
+  ];
+
+  if (compact) {
+    return (
+      <div className="panel grid grid-cols-4 md:grid-cols-8 divide-x divide-white/5">
+        {items.map((m) => (
+          <MetricCell key={m.label} {...m} />
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div className="grid grid-cols-4 md:grid-cols-8 gap-2">
-      <MetricCard compact={compact} label="Ann. Return" value={pct(metrics.annualised_return)} tone={retTone} tooltip="Compound annual growth rate of the portfolio over the selected period." />
-      <MetricCard compact={compact} label="Ann. Volatility" value={pct(metrics.annualised_volatility)} tone={volTone} tooltip="Standard deviation of daily returns × √252. A measure of total risk." />
-      <MetricCard compact={compact} label="Sharpe" value={num(metrics.sharpe_ratio)} tone={sharpeTone} tooltip="Excess return over the 4.5% risk-free rate per unit of volatility. >1 is generally considered good." />
-      <MetricCard compact={compact} label="Alpha (ann.)" value={pct(metrics.alpha)} tone={alphaTone} tooltip="Jensen's alpha vs SPY: annualised excess return above what CAPM predicts given the portfolio's beta." />
-      <MetricCard compact={compact} label="Beta" value={num(metrics.beta, 2)} tone={betaTone} tooltip="Sensitivity to SPY movements. β < 1 = less volatile than market, β > 1 = more volatile." />
-      <MetricCard compact={compact} label="Max Drawdown" value={pct(metrics.max_drawdown)} tone="bad" tooltip="Largest peak-to-trough decline in the cumulative return curve over the period." />
-      <MetricCard compact={compact} label="VaR 95%" value={pct(metrics.var_95)} tone="warn" tooltip="Historical Value-at-Risk: with 95% confidence, daily losses should not exceed this figure." />
-      <MetricCard compact={compact} label="CVaR 95%" value={pct(metrics.cvar_95)} tone="bad" tooltip="Expected Shortfall: average loss on days when the VaR threshold is breached." />
+      {items.map((m) => (
+        <MetricCard key={m.label} {...m} />
+      ))}
     </div>
   );
 }

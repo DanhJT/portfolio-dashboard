@@ -132,7 +132,18 @@ function LiquiditySnapshotCard({ onNavigate }) {
 
   if (loading) return <SkeletonCard rows={6} />;
 
-  const positions = data?.positions ?? [];
+  // Right column is fixed-height; show the positions most worth a glance
+  // (divergence-flagged first, then largest) and link to the full table.
+  const SNAPSHOT_ROWS = 5;
+  const allPositions = data?.positions ?? [];
+  const positions = [...allPositions]
+    .sort((a, b) => {
+      const fa = Math.abs(a.kelly_divergence) > 0.10 ? 1 : 0;
+      const fb = Math.abs(b.kelly_divergence) > 0.10 ? 1 : 0;
+      return fb - fa || b.current_weight - a.current_weight;
+    })
+    .slice(0, SNAPSHOT_ROWS);
+  const hidden = allPositions.length - positions.length;
 
   return (
     <div className="panel p-3 space-y-2">
@@ -166,6 +177,15 @@ function LiquiditySnapshotCard({ onNavigate }) {
           </tbody>
         </table>
       )}
+      {hidden > 0 && (
+        <button
+          type="button"
+          onClick={() => onNavigate("liquidity")}
+          className="text-[10px] text-neutral-500 hover:text-white transition"
+        >
+          +{hidden} more
+        </button>
+      )}
     </div>
   );
 }
@@ -180,7 +200,7 @@ export default function OverviewTab({
   onNavigate,
 }) {
   return (
-    <div className="flex flex-col gap-3 h-[calc(100vh-9.5rem)]">
+    <div className="flex flex-col gap-3 h-[calc(100vh-4.5rem)]">
       <RiskMetricsPanel metrics={metrics} compact />
 
       <div className="grid grid-cols-12 gap-4 flex-1 min-h-0">
@@ -190,6 +210,7 @@ export default function OverviewTab({
             series={prices?.series}
             benchmarkTicker={prices?.benchmark_ticker}
             period={period}
+            portfolio={portfolio}
             compact
           />
         </div>

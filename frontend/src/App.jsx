@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import TabNav from "./components/TabNav.jsx";
+import AboutTab from "./components/tabs/AboutTab.jsx";
 import LiquidityTab from "./components/tabs/LiquidityTab.jsx";
 import OverviewTab from "./components/tabs/OverviewTab.jsx";
 import RiskTab from "./components/tabs/RiskTab.jsx";
@@ -27,6 +28,7 @@ const MAIN_TABS = [
   { key: "overview", label: "Overview" },
   { key: "risk", label: "Risk Models" },
   { key: "liquidity", label: "Liquidity" },
+  { key: "about", label: "About" },
 ];
 
 function PeriodSelector({ value, onChange, disabled }) {
@@ -43,7 +45,7 @@ function PeriodSelector({ value, onChange, disabled }) {
             type="button"
             onClick={() => onChange(p.value)}
             disabled={disabled}
-            className={`px-3 py-1.5 text-xs font-medium transition ${
+            className={`px-2 py-1 text-[11px] font-medium transition ${
               active
                 ? "bg-white text-black"
                 : "bg-transparent text-neutral-300 hover:bg-white/5"
@@ -84,13 +86,13 @@ function StrategyBadge({ portfolio }) {
     ? new Date(portfolio.rebalanced_at).toLocaleDateString()
     : null;
   return (
-    <div className="inline-flex items-center gap-2 text-xs text-neutral-400">
-      <span className="inline-flex items-center rounded-full border border-emerald-900/60 bg-emerald-950/30 px-2 py-0.5 text-[11px] font-medium text-emerald-300">
+    <div className="hidden lg:inline-flex items-center gap-2 text-[10px] text-neutral-400 whitespace-nowrap">
+      <span className="inline-flex items-center rounded-full border border-emerald-900/60 bg-emerald-950/30 px-1.5 py-px font-medium text-emerald-300">
         {label}
       </span>
       {rebalanced && (
-        <span className="font-mono text-neutral-400">
-          Rebalanced {rebalanced}
+        <span className="font-mono text-neutral-400" title={`Rebalanced ${rebalanced}`}>
+          Rebal. {rebalanced}
         </span>
       )}
     </div>
@@ -113,6 +115,7 @@ export default function App() {
     return {
       tickers: activePortfolio.tickers,
       weights: activePortfolio.weights,
+      strategy: activePortfolio.strategy,
       period,
     };
   }, [activePortfolio, period]);
@@ -151,20 +154,19 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-chassis text-white">
+      {/* Single bar: title · tabs · controls. Kept to ~44px so the fixed-height
+          Overview layout below gets the vertical space. */}
       <header className="sticky top-0 z-20 border-b rule bg-chassis/95 backdrop-blur">
-        <div className="mx-auto max-w-[1600px] px-6 py-4 flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <h1 className="text-xl font-semibold tracking-tight text-white">
-              Portfolio Risk Dashboard
+        <div className="mx-auto max-w-[1600px] px-6 min-h-[2.75rem] flex flex-wrap items-stretch gap-x-4">
+          <div className="flex items-center gap-4">
+            <h1 className="text-sm font-semibold tracking-tight text-white whitespace-nowrap">
+              Portfolio Risk<span className="hidden xl:inline"> Dashboard</span>
             </h1>
-            <div className="mt-1 flex items-center gap-3">
-              <p className="text-xs text-neutral-400">
-                {IS_STATIC ? "Daily snapshot · data from Yahoo Finance" : "Live data from Yahoo Finance"}
-              </p>
-              <StrategyBadge portfolio={activePortfolio} />
-            </div>
+            <span className="h-4 w-px bg-white/10" aria-hidden />
           </div>
-          <div className="flex items-center gap-3">
+          <TabNav tabs={MAIN_TABS} active={activeTab} onChange={setActiveTab} />
+          <div className="ml-auto flex items-center gap-3 py-1.5">
+            <StrategyBadge portfolio={activePortfolio} />
             <PeriodSelector
               value={period}
               onChange={setPeriod}
@@ -174,26 +176,27 @@ export default function App() {
               type="button"
               onClick={refresh}
               disabled={loading}
-              className="control control-hover inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-neutral-200 disabled:cursor-not-allowed disabled:opacity-60"
+              className="control control-hover inline-flex h-7 w-7 items-center justify-center text-neutral-200 disabled:cursor-not-allowed disabled:opacity-60"
               aria-label="Refresh data"
               title="Refresh data"
             >
               <RefreshIcon spinning={loading} />
-              Refresh
             </button>
-            <div className="text-xs text-neutral-400 font-mono">
+            <div
+              className="text-[10px] text-neutral-400 font-mono whitespace-nowrap"
+              title={IS_STATIC ? "Daily snapshot · data from Yahoo Finance" : "Live data from Yahoo Finance"}
+            >
               {updatedAt
                 ? IS_STATIC
-                  ? `Data as of ${updatedAt.toLocaleDateString()}`
+                  ? `As of ${updatedAt.toLocaleDateString()}`
                   : `Updated ${updatedAt.toLocaleTimeString()}`
                 : "Loading…"}
             </div>
           </div>
         </div>
-        <TabNav tabs={MAIN_TABS} active={activeTab} onChange={setActiveTab} />
       </header>
 
-      <main className="mx-auto max-w-[1600px] px-6 py-5 space-y-4">
+      <main className="mx-auto max-w-[1600px] px-6 py-3 space-y-3">
         {error && (
           <div className="rounded-md border border-rose-900 bg-rose-950/50 p-3 text-sm text-rose-300">
             {error}
@@ -213,6 +216,9 @@ export default function App() {
         )}
         {activeTab === "risk" && <RiskTab />}
         {activeTab === "liquidity" && <LiquidityTab />}
+        {activeTab === "about" && (
+          <AboutTab portfolio={activePortfolio} strategyLabels={STRATEGY_LABELS} />
+        )}
       </main>
 
       <footer className="mx-auto max-w-[1600px] px-6 py-4 text-xs text-neutral-400">

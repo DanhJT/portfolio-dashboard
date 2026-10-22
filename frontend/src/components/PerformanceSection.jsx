@@ -1,6 +1,8 @@
 import React from "react";
 import PerformanceChart from "./PerformanceChart.jsx";
 import RelativePerformanceChart from "./RelativePerformanceChart.jsx";
+import SectorExposureChart from "./SectorExposureChart.jsx";
+import WeightsDonutChart from "./WeightsDonutChart.jsx";
 
 const PERIOD_LABELS = {
   "3mo": "3M",
@@ -18,6 +20,7 @@ export default function PerformanceSection({
   series,
   benchmarkTicker = "SPY",
   period,
+  portfolio,
   compact = false,
 }) {
   const periodLabel = PERIOD_LABELS[period] ?? period;
@@ -36,12 +39,24 @@ export default function PerformanceSection({
           </span>
         </div>
       )}
-      <PerformanceChart series={series} benchmarkTicker={benchmarkTicker} chartHeight={compact ? "h-40" : "h-64"} />
+      <PerformanceChart series={series} benchmarkTicker={benchmarkTicker} chartHeight={compact ? "h-32" : "h-64"} />
       <RelativePerformanceChart
         series={series}
         benchmarkTicker={benchmarkTicker}
-        chartHeight={compact ? "h-28" : "h-48"}
+        chartHeight={compact ? "h-24" : "h-48"}
       />
+      {/* Two equal columns: holdings weights, then how those holdings sit by sector vs the S&P */}
+      <div className="grid grid-cols-2 gap-3">
+        <WeightsDonutChart
+          portfolio={portfolio}
+          strategy={portfolio?.strategy}
+          chartHeight={compact ? "h-40" : "h-52"}
+        />
+        <SectorExposureChart
+          portfolio={portfolio}
+          chartHeight={compact ? "h-40" : "h-52"}
+        />
+      </div>
     </section>
   );
 }
