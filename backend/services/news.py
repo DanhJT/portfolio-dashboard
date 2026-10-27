@@ -1,6 +1,10 @@
-"""Per-ticker news fetching via yfinance.
+"""Per-ticker news from Yahoo Finance.
 
-yfinance returns news in two different shapes depending on version:
+Primary source is Yahoo's public search endpoint, which returns the old flat
+shape below. yfinance's own ``Ticker.news`` (1.x) reads an internal endpoint
+that started returning empty lists for every ticker, so it is only a fallback.
+
+The two sources return news in two different shapes:
 
 Old (<0.2.50 or so):
     {"title": ..., "publisher": ..., "link": ...,
@@ -22,11 +26,14 @@ import logging
 from datetime import datetime, timezone
 from typing import Any
 
-import yfinance as yf
+import requests
 
 logger = logging.getLogger(__name__)
 
 MAX_PER_TICKER = 5
+SEARCH_URL = "https://query2.finance.yahoo.com/v1/finance/search"
+# Yahoo rejects requests without a browser-like User-Agent.
+HEADERS = {"User-Agent": "Mozilla/5.0 (portfolio-dashboard)"}
 
 
 def _coerce_published(raw: Any) -> str | None:
@@ -79,13 +86,37 @@ def _normalise(item: dict[str, Any], ticker: str) -> dict[str, Any] | None:
     }
 
 
+def _search_news(ticker: str) -> list[dict[str, Any]]:
+    """Stories Yahoo's search endpoint tags with `ticker` (flat shape)."""
+    resp = requests.get(
+        SEARCH_URL,
+        params={"q": ticker, "quotesCount": 0, "newsCount": MAX_PER_TICKER * 2},
+        headers=HEADERS,
+        timeout=15,
+    )
+    resp.raise_for_status()
+    news = resp.json().get("news") or []
+    # A search for "EG" can match other companies; keep stories tagged with the ticker.
+    return [n for n in news if ticker in (n.get("relatedTickers") or [ticker])]
+
+
+def _yfinance_news(ticker: str) -> list[dict[str, Any]]:
+    import yfinance as yf  # imported lazily: only needed for the fallback
+
+    return yf.Ticker(ticker).news or []
+
+
 def _fetch_for_ticker(ticker: str) -> list[dict[str, Any]]:
-    """Synchronous yfinance call. Runs in a worker thread to keep the route async."""
-    try:
-        raw = yf.Ticker(ticker).news or []
-    except Exception as exc:  # noqa: BLE001 — yfinance raises a variety of network errors
-        logger.warning("news fetch failed for %s: %s", ticker, exc)
-        return []
+    """Synchronous fetch. Runs in a worker thread to keep the route async."""
+    raw: list[dict[str, Any]] = []
+    for source in (_search_news, _yfinance_news):
+        try:
+            raw = source(ticker)
+        except Exception as exc:  # noqa: BLE001 — network errors come in many shapes
+            logger.warning("news fetch (%s) failed for %s: %s", source.__name__, ticker, exc)
+            continue
+        if raw:
+            break
     items: list[dict[str, Any]] = []
     for r in raw[:MAX_PER_TICKER]:
         if not isinstance(r, dict):

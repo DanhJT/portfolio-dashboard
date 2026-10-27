@@ -17674,7 +17674,488 @@
     ]
   },
   "news": {
-    "items": []
+    "items": [
+      {
+        "ticker": "CMCSA",
+        "title": "Xfinity and Comcast Business Reliable, High-Speed Internet Now Available in Franklin, New Hampshire",
+        "publisher": "Business Wire",
+        "url": "https://finance.yahoo.com/technology/articles/xfinity-comcast-business-reliable-high-140000605.html",
+        "published_at": "2026-10-27T14:00:00+00:00",
+        "summary": null
+      },
+      {
+        "ticker": "EG",
+        "title": "ContinuServe Earns Major Contender Recognition in Everest Group's 2026 PEAK Matrix\u00ae for Mid-market Finance and Accounting Services",
+        "publisher": "PR Newswire",
+        "url": "https://finance.yahoo.com/small-business/articles/continuserve-earns-major-contender-recognition-140000431.html",
+        "published_at": "2026-10-27T14:00:00+00:00",
+        "summary": null
+      },
+      {
+        "ticker": "C",
+        "title": "Citi: small-cap short positioning nears historical extremes, lifting squeeze risk",
+        "publisher": "Investing.com",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/citi-small-cap-short-positioning-135430698.html",
+        "published_at": "2026-10-27T13:54:30+00:00",
+        "summary": null
+      },
+      {
+        "ticker": "C",
+        "title": "American Airlines, Citi, Mastercard Enhance Platinum Select, Business Credit Cards",
+        "publisher": "MT Newswires",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/american-airlines-citi-mastercard-enhance-135022308.html",
+        "published_at": "2026-10-27T13:50:22+00:00",
+        "summary": null
+      },
+      {
+        "ticker": "VICI",
+        "title": "How a 69-Year-Old Collects $4,350 a Month From Just Three Tickers: SCHD, JEPQ, and VICI",
+        "publisher": "24/7 Wall St.",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/69-old-collects-4-350-133512924.html",
+        "published_at": "2026-10-27T13:35:12+00:00",
+        "summary": null
+      },
+      {
+        "ticker": "MOS",
+        "title": "This Canadian fertilizer stock is standing firm amid market volatility",
+        "publisher": "Investing.com",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/canadian-fertilizer-stock-standing-firm-133010834.html",
+        "published_at": "2026-10-27T13:30:10+00:00",
+        "summary": null
+      },
+      {
+        "ticker": "MOS",
+        "title": "UBS Adjusts Mosaic Price Target to $19 From $23, Maintains Neutral Rating",
+        "publisher": "MT Newswires",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/ubs-adjusts-mosaic-price-target-132052127.html",
+        "published_at": "2026-10-27T13:20:52+00:00",
+        "summary": null
+      },
+      {
+        "ticker": "CMCSA",
+        "title": "Xfinity and Comcast Business High-Speed Internet Now Available to Nearly 1,100 Homes and Businesses in Northeast Indiana",
+        "publisher": "Business Wire",
+        "url": "https://finance.yahoo.com/technology/articles/xfinity-comcast-business-high-speed-132000500.html",
+        "published_at": "2026-10-27T13:20:00+00:00",
+        "summary": null
+      },
+      {
+        "ticker": "KHC",
+        "title": "Kraft Heinz (KHC) Soup Launch Puts Fair Value Back In Focus",
+        "publisher": "Simply Wall St.",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/kraft-heinz-khc-soup-launch-131320309.html",
+        "published_at": "2026-10-27T13:13:20+00:00",
+        "summary": null
+      },
+      {
+        "ticker": "TFC",
+        "title": "Truist names Alex Bartlett regional president for Greater Washington and Maryland",
+        "publisher": "PR Newswire",
+        "url": "https://finance.yahoo.com/small-business/articles/truist-names-alex-bartlett-regional-130300467.html",
+        "published_at": "2026-10-27T13:03:00+00:00",
+        "summary": null
+      },
+      {
+        "ticker": "MOS",
+        "title": "Earnings Preview: Mosaic (MOS) Q3 Earnings Expected to Decline",
+        "publisher": "Zacks",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/earnings-preview-mosaic-mos-q3-130008720.html",
+        "published_at": "2026-10-27T13:00:08+00:00",
+        "summary": null
+      },
+      {
+        "ticker": "C",
+        "title": "American Airlines and Citi Enhance the Citi / AAdvantage Platinum Select World Elite Mastercard and the Citi AAdvantage Business World Elite Mastercard With More Ways to Earn and New Travel Benefits",
+        "publisher": "Business Wire",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/american-airlines-citi-enhance-citi-130000688.html",
+        "published_at": "2026-10-27T13:00:00+00:00",
+        "summary": null
+      },
+      {
+        "ticker": "C",
+        "title": "Broadcom Lines Up $63 Billion to Finance Anthropic's Chips",
+        "publisher": "GuruFocus.com",
+        "url": "https://finance.yahoo.com/technology/ai/articles/broadcom-lines-63-billion-finance-125752921.html",
+        "published_at": "2026-10-27T12:57:52+00:00",
+        "summary": null
+      },
+      {
+        "ticker": "C",
+        "title": "Royal Caribbean Stock Jumps. Its Earnings Are Good News for Cruise Fuel Fears.",
+        "publisher": "Barrons.com",
+        "url": "https://finance.yahoo.com/m/3c6f0030-2081-3f1b-8f47-72fd2cd6dd6b/royal-caribbean-stock-jumps..html",
+        "published_at": "2026-10-27T12:47:00+00:00",
+        "summary": null
+      },
+      {
+        "ticker": "IVZ",
+        "title": "Compared to Estimates, Invesco (IVZ) Q3 Earnings: A Look at Key Metrics",
+        "publisher": "Zacks",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/compared-estimates-invesco-ivz-q3-123003064.html",
+        "published_at": "2026-10-27T12:30:03+00:00",
+        "summary": null
+      },
+      {
+        "ticker": "EG",
+        "title": "Neeyamo Recognized as a Leader and Star Performer in Everest Group's 2026 Multi-Country Payroll PEAK Matrix\u00ae Assessment",
+        "publisher": "PR Newswire",
+        "url": "https://finance.yahoo.com/technology/articles/neeyamo-recognized-leader-star-performer-121300811.html",
+        "published_at": "2026-10-27T12:13:00+00:00",
+        "summary": null
+      },
+      {
+        "ticker": "EG",
+        "title": "Businessolver Named a Leader and the Highest-rated Platform in Everest Group's 2026 PEAK Matrix Reports for Benefits Administration",
+        "publisher": "PR Newswire",
+        "url": "https://finance.yahoo.com/healthcare/articles/businessolver-named-leader-highest-rated-120100839.html",
+        "published_at": "2026-10-27T12:01:00+00:00",
+        "summary": null
+      },
+      {
+        "ticker": "ALB",
+        "title": "Investors Heavily Search Albemarle Corporation (ALB): Here is What You Need to Know",
+        "publisher": "Zacks",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/investors-heavily-search-albemarle-corporation-120003522.html",
+        "published_at": "2026-10-27T12:00:03+00:00",
+        "summary": null
+      },
+      {
+        "ticker": "CMCSA",
+        "title": "Universal Ads Brings TV Buying into the Flow of Modern Media Buying",
+        "publisher": "Business Wire",
+        "url": "https://finance.yahoo.com/media-advertising/articles/universal-ads-brings-tv-buying-120000912.html",
+        "published_at": "2026-10-27T12:00:00+00:00",
+        "summary": null
+      },
+      {
+        "ticker": "IVZ",
+        "title": "Janus Launches First Tokenized Fund Licensing the Nasdaq-100 Index",
+        "publisher": "The Wall Street Journal",
+        "url": "https://finance.yahoo.com/m/8af441ee-2332-321e-8d87-67e1475ad3d8/janus-launches-first.html",
+        "published_at": "2026-10-27T12:00:00+00:00",
+        "summary": null
+      },
+      {
+        "ticker": "IVZ",
+        "title": "Envestnet Custom Model Solutions Gives RIAs a White-Labeled Path to Outsourced Model Management",
+        "publisher": "PR Newswire",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/envestnet-custom-model-solutions-gives-120000697.html",
+        "published_at": "2026-10-27T12:00:00+00:00",
+        "summary": null
+      },
+      {
+        "ticker": "CMCSA",
+        "title": "Should You Buy AT&T Stock For Its Cash?",
+        "publisher": "Trefis",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/buy-t-stock-cash-113811569.html",
+        "published_at": "2026-10-27T11:38:11+00:00",
+        "summary": null
+      },
+      {
+        "ticker": "CMCSA",
+        "title": "Is Current Price Of T-Mobile Stock A Strong Support?",
+        "publisher": "Trefis",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/current-price-t-mobile-stock-113806417.html",
+        "published_at": "2026-10-27T11:38:06+00:00",
+        "summary": null
+      },
+      {
+        "ticker": "IVZ",
+        "title": "Invesco's Q3 Adjusted Earnings, Operating Revenue Increase",
+        "publisher": "MT Newswires",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/invesco-apos-q3-adjusted-earnings-113202080.html",
+        "published_at": "2026-10-27T11:32:02+00:00",
+        "summary": null
+      },
+      {
+        "ticker": "IVZ",
+        "title": "Invesco (NYSE:IVZ) delivers strong Q3 2026 numbers",
+        "publisher": "StockStory",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/invesco-nyse-ivz-delivers-strong-111944391.html",
+        "published_at": "2026-10-27T11:19:44+00:00",
+        "summary": null
+      },
+      {
+        "ticker": "TFC",
+        "title": "Truist Financial (TFC) Expands Hyderabad AI Hub As India Team Tops 1,000",
+        "publisher": "Simply Wall St.",
+        "url": "https://finance.yahoo.com/technology/ai/articles/truist-financial-tfc-expands-hyderabad-111243456.html",
+        "published_at": "2026-10-27T11:12:43+00:00",
+        "summary": null
+      },
+      {
+        "ticker": "TFC",
+        "title": "Broadcom Could Generate Up to $30 Billion in Revenue From Anthropic AI Financing Deal With Limited Risk, Truist Says",
+        "publisher": "MT Newswires",
+        "url": "https://finance.yahoo.com/technology/ai/articles/broadcom-could-generate-30-billion-110822892.html",
+        "published_at": "2026-10-27T11:08:22+00:00",
+        "summary": null
+      },
+      {
+        "ticker": "EG",
+        "title": "Neeyamo Recognized as a Leader and Star Performer in Everest Group's 2026 Multi-Country Payroll PEAK Matrix\u00ae Assessment",
+        "publisher": "CNW Group",
+        "url": "https://finance.yahoo.com/technology/ai/articles/neeyamo-recognized-leader-star-performer-110500580.html",
+        "published_at": "2026-10-27T11:05:00+00:00",
+        "summary": null
+      },
+      {
+        "ticker": "EG",
+        "title": "TELUS Digital Named a Leader and Star Performer in Everest Group's 2026 Trust and Safety Services PEAK Matrix\u00ae Assessment",
+        "publisher": "PR Newswire",
+        "url": "https://finance.yahoo.com/technology/ai/articles/telus-digital-named-leader-star-104500025.html",
+        "published_at": "2026-10-27T10:45:00+00:00",
+        "summary": null
+      },
+      {
+        "ticker": "CFG",
+        "title": "Evercore ISI Adjusts Price Target on Citizens Financial to $74 From $78",
+        "publisher": "MT Newswires",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/evercore-isi-adjusts-price-target-101133987.html",
+        "published_at": "2026-10-27T10:11:33+00:00",
+        "summary": null
+      },
+      {
+        "ticker": "TFC",
+        "title": "Evercore ISI Adjusts Price Target on Truist Financial to $55 From $54",
+        "publisher": "MT Newswires",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/evercore-isi-adjusts-price-target-101004195.html",
+        "published_at": "2026-10-27T10:10:04+00:00",
+        "summary": null
+      },
+      {
+        "ticker": "TFC",
+        "title": "Truist Financial (TFC): buy, sell, or hold post Q3 earnings?",
+        "publisher": "StockStory",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/truist-financial-tfc-buy-sell-232647766.html",
+        "published_at": "2026-10-26T23:26:47+00:00",
+        "summary": null
+      },
+      {
+        "ticker": "MOS",
+        "title": "What Is Going On With CF Industries Stock?",
+        "publisher": "Trefis",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/going-cf-industries-stock-223841702.html",
+        "published_at": "2026-10-26T22:38:41+00:00",
+        "summary": null
+      },
+      {
+        "ticker": "MOS",
+        "title": "What Is Going On With Nutrien Stock?",
+        "publisher": "Trefis",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/going-nutrien-stock-220452340.html",
+        "published_at": "2026-10-26T22:04:52+00:00",
+        "summary": null
+      },
+      {
+        "ticker": "ARE",
+        "title": "Compared to Estimates, Alexandria Real Estate Equities (ARE) Q3 Earnings: A Look at Key Metrics",
+        "publisher": "Zacks",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/compared-estimates-alexandria-real-estate-210001456.html",
+        "published_at": "2026-10-26T21:00:01+00:00",
+        "summary": null
+      },
+      {
+        "ticker": "ARE",
+        "title": "Alexandria Real Estate Equities (ARE) Q3 FFO and Revenues Surpass Estimates",
+        "publisher": "Zacks",
+        "url": "https://finance.yahoo.com/real-estate/articles/alexandria-real-estate-equities-q3-204502742.html",
+        "published_at": "2026-10-26T20:45:02+00:00",
+        "summary": null
+      },
+      {
+        "ticker": "ARE",
+        "title": "Alexandria Real Estate Equities Q3 Adjusted FFO, Revenue Decline",
+        "publisher": "MT Newswires",
+        "url": "https://finance.yahoo.com/real-estate/articles/alexandria-real-estate-equities-q3-203400873.html",
+        "published_at": "2026-10-26T20:34:00+00:00",
+        "summary": null
+      },
+      {
+        "ticker": "ARE",
+        "title": "Alexandria Real Estate Equities: Q3 Earnings Snapshot",
+        "publisher": "Associated Press",
+        "url": "https://finance.yahoo.com/real-estate/articles/alexandria-real-estate-equities-q3-202140602.html",
+        "published_at": "2026-10-26T20:21:40+00:00",
+        "summary": null
+      },
+      {
+        "ticker": "ALB",
+        "title": "Albemarle Announces Quarterly Common Stock Dividend",
+        "publisher": "PR Newswire",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/albemarle-announces-quarterly-common-stock-201500003.html",
+        "published_at": "2026-10-26T20:15:00+00:00",
+        "summary": null
+      },
+      {
+        "ticker": "ARE",
+        "title": "Alexandria Real Estate Equities, Inc. Reports 3Q26 and YTD 3Q26 Net Loss per Share - Diluted of $3.74 and $2.06, respectively, and 3Q26 and YTD 3Q26 FFO per Share - Diluted, as Adjusted, of $1.54 and $5.00, respectively",
+        "publisher": "PR Newswire",
+        "url": "https://finance.yahoo.com/real-estate/articles/alexandria-real-estate-equities-inc-201000919.html",
+        "published_at": "2026-10-26T20:10:00+00:00",
+        "summary": null
+      },
+      {
+        "ticker": "KHC",
+        "title": "Campbell\u2019s Just Cut Its Dividend. What Income Investors Should Do Now",
+        "publisher": "24/7 Wall St.",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/campbell-just-cut-dividend-income-194514643.html",
+        "published_at": "2026-10-26T19:45:14+00:00",
+        "summary": null
+      },
+      {
+        "ticker": "KHC",
+        "title": "General Mills Yields Nearly 7%. Is Its Dividend Safer Than Kraft Heinz or Smucker?",
+        "publisher": "24/7 Wall St.",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/general-mills-yields-nearly-7-184521295.html",
+        "published_at": "2026-10-26T18:45:21+00:00",
+        "summary": null
+      },
+      {
+        "ticker": "CFG",
+        "title": "Expanding Lending with AI: Pagaya CEO & Co-Founder Gal Krubiner, Live from Money 20/20 2026",
+        "publisher": "Exec Edge",
+        "url": "https://finance.yahoo.com/technology/ai/articles/expanding-lending-ai-pagaya-ceo-172726093.html",
+        "published_at": "2026-10-26T17:27:26+00:00",
+        "summary": null
+      },
+      {
+        "ticker": "VICI",
+        "title": "How to Build $10,900 a Month in Dividend Income From Three Income Buckets",
+        "publisher": "24/7 Wall St.",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/build-10-900-month-dividend-161505402.html",
+        "published_at": "2026-10-26T16:15:05+00:00",
+        "summary": null
+      },
+      {
+        "ticker": "CFG",
+        "title": "Citigroup Lifts 2026 RoTCE Outlook: What's Fueling the Optimism?",
+        "publisher": "Zacks",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/citigroup-lifts-2026-rotce-outlook-141400323.html",
+        "published_at": "2026-10-26T14:14:00+00:00",
+        "summary": null
+      },
+      {
+        "ticker": "ALB",
+        "title": "Albemarle Upgrade: Can Energy Storage Recharge Lithium\u2019s Leader?",
+        "publisher": "MarketBeat",
+        "url": "https://finance.yahoo.com/energy/articles/albemarle-upgrade-energy-storage-recharge-151500188.html",
+        "published_at": "2026-10-25T15:15:00+00:00",
+        "summary": null
+      },
+      {
+        "ticker": "ALB",
+        "title": "Should Q3 Earnings Report Require Action From Albemarle (ALB) Investors?",
+        "publisher": "Simply Wall St.",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/q3-earnings-report-require-action-080904189.html",
+        "published_at": "2026-10-25T08:09:04+00:00",
+        "summary": null
+      },
+      {
+        "ticker": "KHC",
+        "title": "Conagra Has Already Cut Its Dividend. Can Kraft Heinz Avoid the Same Fate?",
+        "publisher": "24/7 Wall St.",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/conagra-already-cut-dividend-kraft-121511966.html",
+        "published_at": "2026-10-24T12:15:11+00:00",
+        "summary": null
+      },
+      {
+        "ticker": "KHC",
+        "title": "Kraft Heinz (KHC): buy, sell, or hold post Q2 earnings?",
+        "publisher": "StockStory",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/kraft-heinz-khc-buy-sell-005639732.html",
+        "published_at": "2026-10-24T00:56:39+00:00",
+        "summary": null
+      },
+      {
+        "ticker": "ALB",
+        "title": "Can Albemarle Stock Jump 50%?",
+        "publisher": "Trefis",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/albemarle-stock-jump-50-223417486.html",
+        "published_at": "2026-10-23T22:34:17+00:00",
+        "summary": null
+      },
+      {
+        "ticker": "VICI",
+        "title": "VICI Properties Inc. (VICI) Declines More Than Market: Some Information for Investors",
+        "publisher": "Zacks",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/vici-properties-inc-vici-declines-211503929.html",
+        "published_at": "2026-10-23T21:15:03+00:00",
+        "summary": null
+      },
+      {
+        "ticker": "GPN",
+        "title": "Global Payments to Report Third-Quarter Results on November 5, 2026",
+        "publisher": "Business Wire",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/global-payments-report-third-quarter-180500504.html",
+        "published_at": "2026-10-22T18:05:00+00:00",
+        "summary": null
+      },
+      {
+        "ticker": "VICI",
+        "title": "How to Build $4,400 a Month in Tax-Free Dividend Income Inside a Roth IRA",
+        "publisher": "24/7 Wall St.",
+        "url": "https://finance.yahoo.com/markets/options/articles/build-4-400-month-tax-163844614.html",
+        "published_at": "2026-10-22T16:38:44+00:00",
+        "summary": null
+      },
+      {
+        "ticker": "VICI",
+        "title": "Las Vegas Sands Disappoints on China, Destination Gaming Weakness",
+        "publisher": "Barrons.com",
+        "url": "https://finance.yahoo.com/m/5f06d855-5ef9-3a8f-a4bc-1a01c7251c72/las-vegas-sands-disappoints.html",
+        "published_at": "2026-10-22T09:26:00+00:00",
+        "summary": null
+      },
+      {
+        "ticker": "GPN",
+        "title": "What Are Mastercard Investors Betting On?",
+        "publisher": "Trefis",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/mastercard-investors-betting-023636134.html",
+        "published_at": "2026-10-22T02:36:36+00:00",
+        "summary": null
+      },
+      {
+        "ticker": "GPN",
+        "title": "Is Visa Stock Riskier Than It Looks?",
+        "publisher": "Trefis",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/visa-stock-riskier-looks-020427404.html",
+        "published_at": "2026-10-22T02:04:27+00:00",
+        "summary": null
+      },
+      {
+        "ticker": "GPN",
+        "title": "Is The Market Underpricing Mastercard Stock?",
+        "publisher": "Trefis",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/market-underpricing-mastercard-stock-013147984.html",
+        "published_at": "2026-10-21T01:31:47+00:00",
+        "summary": null
+      },
+      {
+        "ticker": "CFG",
+        "title": "This Bank Stock Just Raised Its Dividend by 13%",
+        "publisher": "Barchart",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/bank-stock-just-raised-dividend-000003613.html",
+        "published_at": "2026-10-21T00:00:03+00:00",
+        "summary": null
+      },
+      {
+        "ticker": "GPN",
+        "title": "Top Fintech and Crypto Stocks: Moness Crespi Hardt\u2019s Picks",
+        "publisher": "Investing.com",
+        "url": "https://finance.yahoo.com/markets/crypto/articles/top-fintech-crypto-stocks-moness-153643732.html",
+        "published_at": "2026-10-19T15:36:43+00:00",
+        "summary": null
+      },
+      {
+        "ticker": "CFG",
+        "title": "DA Davidson Adjusts Price Target on Citizens Financial to $82 From $85",
+        "publisher": "MT Newswires",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/da-davidson-adjusts-price-target-132234126.html",
+        "published_at": "2026-10-19T13:22:34+00:00",
+        "summary": null
+      }
+    ]
   },
   "monte_carlo": {
     "var_95": 0.08434795054959808,
