@@ -199,6 +199,13 @@ export default function OverviewTab({
   period,
   onNavigate,
 }) {
+  // News covers the largest positions only, so filter on the tickers that
+  // actually have stories (kept in portfolio order, i.e. by weight).
+  const newsTickers = useMemo(() => {
+    const withNews = new Set((news?.items ?? []).map((it) => it.ticker));
+    return (portfolio?.tickers ?? []).filter((t) => withNews.has(t));
+  }, [news, portfolio?.tickers]);
+
   return (
     <div className="flex flex-col gap-3 h-[calc(100vh-4.5rem)]">
       <RiskMetricsPanel metrics={metrics} compact />
@@ -224,7 +231,7 @@ export default function OverviewTab({
             <NewsPanel
               news={news}
               loading={loading && !news}
-              tickers={portfolio?.tickers ?? []}
+              tickers={newsTickers}
             />
           </div>
         </div>

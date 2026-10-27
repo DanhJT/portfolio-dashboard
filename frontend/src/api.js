@@ -60,6 +60,7 @@ const PERIOD_ALIASES = {
   "6mo": "6mo",
   "1y": "1y",
   "2y": "2y",
+  "5y": "5y",
 };
 
 function periodKey(period) {
@@ -114,6 +115,12 @@ export async function getPrices(portfolio) {
     return s.periods[periodKey(portfolio.period)].prices;
   }
   return fetchJSON(`/api/portfolio/prices?${buildQuery(portfolio)}`);
+}
+
+// How the backtest behind the performance figures was run (static mode only).
+export async function getBacktest() {
+  if (IS_STATIC) return (await loadSnapshot()).backtest ?? null;
+  return null;
 }
 
 export async function getNews(portfolio) {

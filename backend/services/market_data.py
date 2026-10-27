@@ -22,6 +22,7 @@ _PERIOD_ALIASES: dict[str, str] = {
     "6mo": "6mo",
     "1y": "1y",
     "2y": "2y",
+    "5y": "5y",
 }
 
 
@@ -29,7 +30,7 @@ def normalise_period(period: str) -> str:
     """Map user-friendly period strings to yfinance period strings."""
     key = period.lower().strip()
     if key not in _PERIOD_ALIASES:
-        raise ValueError(f"unsupported period '{period}'. Use one of: 3M, 6M, 1Y, 2Y")
+        raise ValueError(f"unsupported period '{period}'. Use one of: 3M, 6M, 1Y, 2Y, 5Y")
     return _PERIOD_ALIASES[key]
 
 

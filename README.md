@@ -100,8 +100,8 @@ portfolio is used: 25% AAPL, 25% MSFT, 20% NVDA, 15% JPM, 15% BRK-B.
 
 The strategy ranks **all current S&P 500 constituents**, read from
 [backend/data/sp500_constituents.csv](backend/data/sp500_constituents.csv)
-(symbol, name, GICS sector, CIK). Nothing scrapes at runtime, so every
-snapshot run is reproducible from the repo alone.
+(symbol, name, GICS sector, CIK, date added). Nothing scrapes Wikipedia at
+runtime, so the universe is reproducible from the repo alone.
 
 Refresh the list after S&P's quarterly index changes:
 
@@ -114,9 +114,24 @@ sector map for the frontend). Commit both. Symbols use Yahoo's
 convention (`BRK-B`, not `BRK.B`), and the CIK column lets the strategy collapse
 multiple share classes of one issuer (GOOGL/GOOG) into a single position.
 
-Because the universe is the *current* index membership rather than
-point-in-time history, it is only as fresh as the last refresh — worth noting
-in any write-up, since the portfolio is run forward rather than backtested.
+The backtest only ranks a stock from the date it joined the index, so later
+additions can't leak backwards. Companies that have since left the index are
+missing, which leaves some survivorship bias (see the About tab).
+
+## Strategy and backtest
+
+Each month the strategy holds the **top 10%** of S&P 500 companies by a 50/50
+blend of 12-1 momentum and book-to-market z-scores, weighted in proportion to
+score and capped at 35% per name. `services/strategy.py` runs these rules on the
+first trading day of every month over the last five years, using only data from
+before each date; the live holdings are the latest of those rebalances, and every
+performance figure on the dashboard comes from the backtest.
+
+Book equity comes from SEC EDGAR's XBRL frames API (used 90 days after each
+quarter ends) and shares outstanding from Yahoo's share-count history; see
+`services/fundamentals.py`. SEC needs a contact email, so set
+`SEC_CONTACT_EMAIL` in the repo-root `.env` locally and as a repository secret
+for the GitHub Action. Downloads are cached in `backend/.cache`.
 
 ## Risk metric definitions
 
@@ -194,19 +209,20 @@ cd backend && python generate_snapshot.py   # writes ../frontend/public/snapshot
 
 | Var                 | Effect                                                                 |
 |---------------------|------------------------------------------------------------------------|
-| `FORCE_REBALANCE=1` | `generate_snapshot.py` re-screens the universe on a non-rebalance day. |
+| `SEC_CONTACT_EMAIL` | Contact email SEC EDGAR requires for book-equity data. Without it the snapshot run fails rather than publishing momentum-only holdings. |
+| `ALLOW_MOMENTUM_ONLY=1` | Publish anyway when value data is unavailable. |
 | `SCREEN_ON_STARTUP=1` | `main.py` runs the full screen at startup instead of seeding holdings from `snapshot.json`. |
 
-Holdings are only re-screened on the first US trading day of the month; every
-other daily run keeps the existing tickers and weights and just refreshes
-prices, risk and commentary. That matches the monthly methodology and keeps the
-S&P 500 screen from making hundreds of Yahoo calls a day.
+Every daily run re-runs the backtest. Past rebalances only use data from before
+their date, so they come out the same each day, and the holdings only change on
+the first US trading day of the month.
 
 ## Notes
 
 - Educational use only — not investment advice.
 - `yfinance` data is delayed and best-effort. Tickers with no data are
   dropped with a log warning rather than failing the request.
-- The strategy degrades gracefully: if the value signal is unavailable it
-  falls back to momentum-only, and if all signals fail it falls back to an
-  equal-weight basket — so snapshot generation never crashes.
+- If value data is too thin at a rebalance, that month ranks on momentum
+  alone. The live API falls back to an equal-weight basket if market data can't
+  be loaded at all; the snapshot generator instead exits and keeps the
+  previous snapshot.

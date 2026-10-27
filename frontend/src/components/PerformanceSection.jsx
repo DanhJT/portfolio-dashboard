@@ -9,6 +9,7 @@ const PERIOD_LABELS = {
   "6mo": "6M",
   "1y": "1Y",
   "2y": "2Y",
+  "5y": "5Y",
 };
 
 /**

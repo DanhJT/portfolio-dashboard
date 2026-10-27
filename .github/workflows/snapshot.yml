@@ -4,20 +4,17 @@ name: Refresh data snapshot
 # it. The commit triggers Vercel's auto-deploy, so the static dashboard always
 # serves fresh daily data without a live backend.
 #
-# Runs daily after the US market has closed and settled. Holdings are only
-# re-screened on the first US trading day of the month; other days hold the
-# existing portfolio and refresh prices/risk. Can also be triggered manually
-# from the Actions tab (workflow_dispatch), optionally forcing a fresh screen.
+# Runs daily after the US market has closed and settled. Each run re-runs the
+# monthly backtest of the current rules; holdings only change on the first US
+# trading day of the month. Can also be triggered manually from the Actions tab.
+#
+# Needs the repository secret SEC_CONTACT_EMAIL: SEC EDGAR (book equity for the
+# value signal) requires a contact email in every request.
 
 on:
   schedule:
     - cron: "0 7 * * *" # 07:00 UTC daily (~after US EOD data settles)
   workflow_dispatch:
-    inputs:
-      force_rebalance:
-        description: "Re-screen the S&P 500 now instead of holding current positions"
-        type: boolean
-        default: false
 
 # Never let two refreshes run at once.
 concurrency:
@@ -44,13 +41,21 @@ jobs:
       - name: Install backend dependencies
         run: pip install -r backend/requirements.txt
 
+      # SEC filings and share-count history barely change day to day; keep
+      # them between runs so each refresh only fetches what is new.
+      - name: Restore data cache
+        uses: actions/cache@v4
+        with:
+          path: backend/.cache
+          key: data-cache-${{ github.run_id }}
+          restore-keys: data-cache-
+
       - name: Generate snapshot
         working-directory: backend
         # The generator exits non-zero on failure and leaves the existing
         # snapshot untouched, so a bad data day never publishes an empty file.
-        # Scheduled runs have no inputs, so FORCE_REBALANCE stays empty there.
         env:
-          FORCE_REBALANCE: ${{ inputs.force_rebalance && '1' || '' }}
+          SEC_CONTACT_EMAIL: ${{ secrets.SEC_CONTACT_EMAIL }}
         run: python generate_snapshot.py
 
       - name: Commit snapshot if changed

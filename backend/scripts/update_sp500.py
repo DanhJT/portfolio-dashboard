@@ -3,7 +3,7 @@
 
 Scrapes Wikipedia's "List of S&P 500 companies" table and writes two files:
 
-- ``backend/data/sp500_constituents.csv`` — symbol, name, gics_sector, cik
+- ``backend/data/sp500_constituents.csv`` — symbol, name, gics_sector, cik, date_added
 - ``frontend/src/sp500Sectors.json``      — {as_of, sectors: {TICKER: label}}
 
 Run this by hand after S&P's quarterly index changes. The strategy itself only
@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import csv
 import json
+import re
 import sys
 from datetime import date
 from pathlib import Path
@@ -82,6 +83,12 @@ def _column_index(header: list[str], *names: str) -> int:
     raise ValueError(f"none of {names} found in header {header}")
 
 
+def _first_date(text: str) -> str:
+    """The first YYYY-MM-DD in a cell (some carry footnotes), or '' if none."""
+    match = re.search(r"\d{4}-\d{2}-\d{2}", text)
+    return match.group(0) if match else ""
+
+
 def fetch_rows() -> list[dict[str, str]]:
     """Parse the constituents table into symbol/name/gics_sector/cik dicts."""
     resp = requests.get(WIKI_URL, headers=HEADERS, timeout=30)
@@ -99,13 +106,14 @@ def fetch_rows() -> list[dict[str, str]]:
         idx_name = _column_index(header, "Security", "Company")
         idx_sector = _column_index(header, "GICS Sector")
         idx_cik = _column_index(header, "CIK")
+        idx_added = _column_index(header, "Date added")
     except ValueError as exc:
         raise RuntimeError(f"unexpected table header {header}") from exc
 
     rows: list[dict[str, str]] = []
     for tr in table.find_all("tr")[1:]:
         cells = [" ".join(td.get_text(" ", strip=True).split()) for td in tr.find_all(["td", "th"])]
-        if len(cells) <= max(idx_symbol, idx_name, idx_sector, idx_cik):
+        if len(cells) <= max(idx_symbol, idx_name, idx_sector, idx_cik, idx_added):
             continue
         symbol = normalise_symbol(cells[idx_symbol])
         if not symbol:
@@ -116,6 +124,9 @@ def fetch_rows() -> list[dict[str, str]]:
             "gics_sector": cells[idx_sector],
             # Zero-padded 10-digit CIK, as the SEC writes it.
             "cik": cells[idx_cik].zfill(10),
+            # When the company joined the index; the backtest only ranks a
+            # stock from this date, so later additions can't leak backwards.
+            "date_added": _first_date(cells[idx_added]),
         })
 
     rows.sort(key=lambda r: r["symbol"])
@@ -126,7 +137,7 @@ def write_csv(rows: list[dict[str, str]], as_of: str) -> None:
     CSV_PATH.parent.mkdir(parents=True, exist_ok=True)
     with CSV_PATH.open("w", newline="") as fh:
         fh.write(f"# S&P 500 constituents — as_of: {as_of} — source: {WIKI_URL}\n")
-        writer = csv.DictWriter(fh, fieldnames=["symbol", "name", "gics_sector", "cik"])
+        writer = csv.DictWriter(fh, fieldnames=["symbol", "name", "gics_sector", "cik", "date_added"])
         writer.writeheader()
         writer.writerows(rows)
 
@@ -153,6 +164,11 @@ def main() -> int:
         print("Add them to SECTOR_LABELS (and to SP500_SECTOR_WEIGHTS in sectors.js).",
               file=sys.stderr)
         return 1
+
+    missing_added = [r["symbol"] for r in rows if not r["date_added"]]
+    if missing_added:
+        print(f"WARNING: no date added for {missing_added} — treated as long-standing members",
+              file=sys.stderr)
 
     missing_cik = [r["symbol"] for r in rows if not r["cik"].strip("0")]
     if missing_cik:

@@ -321,7 +321,7 @@ All endpoints are under `/api` (plus a top-level `GET /health` liveness probe).
 
 #### Data source & resilience
 
-Data comes from **Yahoo Finance via `yfinance`**: daily adjusted close prices, price-to-book fundamentals, news, and 30-day volume. `services/market_data.py` caches results with a short (~1-minute) TTL so repeated requests don't hammer the provider.
+Data comes from **Yahoo Finance via `yfinance`**: daily adjusted close prices, splits, share-count history, news, and 30-day volume; book equity comes from SEC EDGAR. `services/market_data.py` caches results with a short (~1-minute) TTL so repeated requests don't hammer the provider.
 
 The system **degrades gracefully** rather than crashing:
 
@@ -344,70 +344,59 @@ This section explains every concept in plain language, with the actual formula i
 
 ### 5.1 The strategy (`services/strategy.py`)
 
-**Plain language.** Out of a fixed list of 50 large US companies, the strategy scores each one on two ideas that have decades of academic support:
+**Plain language.** Out of every stock in the S&P 500, the strategy scores each one on two ideas that have decades of academic support:
 
 1. **Momentum** — stocks that have gone up over the past year tend to keep going up for a while.
 2. **Value** — cheap stocks (low price relative to their book value) tend to outperform expensive ones.
 
-It blends the two scores 50/50, picks the **top 5**, and assigns weights so the highest-scoring names get more money — while capping any single position at 35% so the portfolio is never dangerously concentrated. The approach is grounded in Asness, Moskowitz & Pedersen (2013), *"Value and Momentum Everywhere."*
+It blends the two scores 50/50, holds the **top 10% of companies** (about 45–50 names), and weights each one in proportion to its score, with a 35% cap on any single position. The approach is grounded in Asness, Moskowitz & Pedersen (2013), *"Value and Momentum Everywhere."*
 
-**The universe (50 tickers, verified in `strategy.py`):**
-
-```
-AAPL, MSFT, NVDA, GOOGL, AMZN, META, LLY, JPM, V, UNH,
-XOM, MA, JNJ, PG, HD, AVGO, COST, MRK, CVX, ABBV,
-WMT, BAC, CRM, KO, PEP, ACN, MCD, TMO, CSCO, ABT,
-ADBE, NFLX, WFC, TXN, DHR, LIN, PM, AMD, AMGN, NEE,
-RTX, LOW, INTU, CAT, SPGI, ISRG, GS, BLK, AMAT, SYK
-```
+**The universe.** All current S&P 500 constituents, from `backend/data/sp500_constituents.csv` (refreshed by `backend/scripts/update_sp500.py`). At each past rebalance a stock only counts if it had already joined the index (the CSV's `date_added` column).
 
 #### Momentum signal
 
 **Plain language.** Measure each stock's return over the past year, but *deliberately skip the most recent month*. The skip avoids the well-known "short-term reversal" effect, where last month's best performers often dip.
 
 > 📐 **Methodology — 12-1 momentum**
-> Momentum = (price ~21 trading days ago ÷ price ~252 trading days ago) − 1.
-> In code: `TRADING_DAYS_PER_MONTH = 21`, lookback `12 × 21 = 252` days, skip `21` days. The raw momentum across stocks is then converted to a **cross-sectional z-score** (how many standard deviations above/below the average stock) and **winsorized at ±3σ** (clipped so a single outlier can't dominate).
+> Momentum = (total-return price ~21 trading days before the rebalance ÷ price ~252 trading days before) − 1, using only closes before the rebalance day. The raw momentum across stocks is converted to a **cross-sectional z-score** and **winsorized at ±3σ**.
 
 #### Value signal
 
-**Plain language.** Use book-to-market (the inverse of price-to-book). A low price-to-book means the stock is "cheap" relative to its accounting net worth, which scores as higher value.
+**Plain language.** Use book-to-market: the company's accounting net worth divided by its stock-market value. A high ratio means "cheap", which scores as higher value. Crucially, the backtest only uses a balance sheet once it would have been public.
 
-> 📐 **Methodology — book-to-market**
-> Value = 1 / `priceToBook` (P/B fetched from yfinance, in parallel via a `ThreadPoolExecutor`). Stocks with missing or non-positive P/B are dropped. The values are converted to a cross-sectional z-score and winsorized at ±3σ. Lower P/B → higher book-to-market → higher value score.
+> 📐 **Methodology — point-in-time book-to-market (`services/fundamentals.py`)**
+> Book equity = `StockholdersEquity` (or the NCI-inclusive total) from SEC EDGAR's XBRL frames API, one request per calendar quarter for all filers. A quarter's value is usable 90 days after the quarter ends. Market equity = shares outstanding (Yahoo share-count history, put on today's split basis) × split-adjusted close. Negative or missing book equity is dropped; z-scored and winsorized at ±3σ. SEC requires a contact email (`SEC_CONTACT_EMAIL`).
 
 #### Composite score
 
 > 📐 **Methodology — composite**
-> composite = 0.5 × momentum_z + 0.5 × value_z, computed only for tickers that have *both* signals.
+> composite = 0.5 × momentum_z + 0.5 × value_z, for tickers with *both* signals. If fewer than half the momentum names have a value score, that month ranks on momentum alone. Multiple share classes of one company (by CIK) keep only the highest-scoring line.
 
 #### Portfolio construction & the 35% cap
 
-**Plain language.** Take the top 5 by composite score and turn scores into weights so the best name gets the most, but the 5th name still gets a meaningful slice (not zero). Then make sure no position exceeds 35%; if one does, trim it back to 35% and spread the excess across the others. Repeat a few times, then normalize so the weights add up to 100%.
+**Plain language.** Take the top 10% of companies by composite score and give each a weight proportional to its score, so stronger signals get more money. No position may exceed 35%; with ~50 names the largest is normally around 3%, so the cap is a guardrail rather than an active constraint.
 
-> 📐 **Methodology — weight construction (verified in `strategy.py`)**
-> Constants: `TOP_N = 5`, `WEIGHT_CAP = 0.35`, `WINSOR_LIMIT = 3.0`.
-> 1. Take the 5 highest composite scores.
-> 2. `spread = max − min`; `floor = spread / 5` (or `1.0` if all scores tie).
-> 3. `shifted = (score − min) + floor` for each name. The `floor` guarantees the lowest-ranked of the five still gets a non-zero allocation; without it, the bottom name's shifted score would be 0 and the portfolio would collapse to 4 effective positions.
-> 4. `weight = shifted / sum(shifted)`.
-> 5. Apply the 35% cap iteratively (up to 12 passes): any weight over 0.35 is set to 0.35 and the excess is redistributed across the uncapped names proportionally; renormalize at the end.
+> 📐 **Methodology — weight construction**
+> Constants: `SELECTION_PCT = 0.10`, `MIN_HOLDINGS = 10`, `WEIGHT_CAP = 0.35`, `WINSOR_LIMIT = 3.0`.
+> 1. `n = max(10, ceil(0.10 × ranked companies))`; take the n highest composite scores.
+> 2. Top-decile scores are positive, so `weight = score / sum(scores)`. (If any selected score is ≤ 0, scores are shifted so the lowest still gets a small positive weight.)
+> 3. Apply the 35% cap iteratively, redistributing any excess across uncapped names, then renormalize.
 
-**Worked example.** Suppose the top 5 composite scores are `[2.5, 2.4, 2.3, 2.2, 2.1]` (highest to lowest).
+#### Backtest
 
-- `spread = 2.5 − 2.1 = 0.4`, so `floor = 0.4 / 5 = 0.08`.
-- `shifted = [0.48, 0.38, 0.28, 0.18, 0.08]`, summing to `1.4`.
-- `weights = [0.343, 0.271, 0.200, 0.129, 0.057]` (the highest-scoring stock gets 34.3%, the lowest still gets 5.7%).
-- No weight exceeds 35%, so the cap step changes nothing here.
+**Plain language.** Every performance number on the dashboard comes from replaying these rules month by month over the last five years — not from pretending today's holdings were held all along. Today's holdings are just the latest month of that replay.
 
-> ⚠️ **Correction vs the original brief.** An earlier write-up listed these example weights as `[0.067, 0.151, 0.235, 0.318, 0.402]`. That does not match the code: the floor is `spread/5 = 0.08` (not a larger value), and the highest score receives the *largest* weight, not the smallest. The verified output is `[0.343, 0.271, 0.200, 0.129, 0.057]`.
+> 📐 **Methodology — `run_strategy()`**
+> Rebalance on the first trading day of each month; signals use data up to the previous close. Between rebalances, weights drift with daily total returns. Turnover is one-way (Σ|new − drifted old| / 2). Returns are gross of costs and taxes. The daily snapshot re-runs the whole backtest; past months only depend on past data, so they reproduce, and holdings change only at month start.
+> Known bias: companies that have left the index are missing, so returns are optimistic (in October 2026 an equal-weight basket of the universe beat RSP by ~3 points a year).
 
-#### Fallbacks (never crashes)
+#### Fallbacks
 
 | Condition | Strategy label | Result |
 | --- | --- | --- |
-| Value data too sparse | `"momentum"` | Top 5 by momentum only |
-| Anything fails (e.g. provider outage) | `"equal-weight-fallback"` | Equal-weight basket: AAPL, MSFT, JPM, JNJ, XOM (20% each) |
+| Value data too sparse at a rebalance | `"momentum"` | Top 10% by momentum only |
+| SEC data unavailable in the snapshot job | — | Job fails, previous snapshot stays live |
+| Market data fails in the live API | `"equal-weight-fallback"` | Equal-weight basket: AAPL, MSFT, JPM, JNJ, XOM (20% each) |
 | Normal operation | `"value-momentum"` | The composite strategy above |
 
 #### Rebalancing (`scheduler.py`)
@@ -505,7 +494,7 @@ For each, it computes the portfolio return, the worst single day, and the max dr
 
 This is a **systematic, rules-based** tool — not discretionary stock-picking. The intended workflow:
 
-1. **Let it rebalance.** On the first trading day of each month, the strategy re-selects the top 5 names and reweights. No one chooses stocks by hand.
+1. **Let it rebalance.** On the first trading day of each month, the strategy re-selects the top 10% of S&P 500 companies and reweights. No one chooses stocks by hand.
 2. **Monitor performance vs SPY.** The Overview tab shows cumulative and excess returns plus the 8 headline metrics.
 3. **Watch tail risk.** Check VaR/CVaR, the Monte Carlo distribution, and the four historical stress tests for worst-case exposure.
 4. **Check the volatility regime.** The GARCH forecast shows whether volatility is rising or falling, and which holdings have stubbornly persistent volatility.

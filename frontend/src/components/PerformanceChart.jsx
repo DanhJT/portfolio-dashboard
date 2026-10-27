@@ -53,8 +53,11 @@ export default function PerformanceChart({ series, benchmarkTicker = "SPY", char
         <h2 className="text-sm uppercase tracking-wider text-neutral-400">
           Cumulative Return
         </h2>
-        <span className="text-xs text-neutral-500">
-          vs {benchmarkTicker}
+        <span
+          className="text-xs text-neutral-500"
+          title="Monthly-rebalanced backtest of the current rules; see the About tab"
+        >
+          Backtest vs {benchmarkTicker}
         </span>
       </div>
       <div className={chartHeight}>
